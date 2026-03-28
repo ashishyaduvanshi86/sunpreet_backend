@@ -6,9 +6,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import asyncio
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
@@ -144,20 +141,38 @@ class ProductStockResponse(BaseModel):
     total_stock: int
 
 
-# Brevo SMTP Email Utility
-def send_brevo_email(to_email: str, subject: str, html_content: str):
-    """Send email via Brevo SMTP"""
-    msg = MIMEMultipart('alternative')
-    msg['From'] = BREVO_SENDER_EMAIL
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg['Reply-To'] = RECIPIENT_EMAIL
-    msg.attach(MIMEText(html_content, 'html'))
+import requests
 
-    with smtplib.SMTP(BREVO_SMTP_SERVER, BREVO_SMTP_PORT) as server:
-        server.starttls()
-        server.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
-        server.sendmail(BREVO_SENDER_EMAIL, to_email, msg.as_string())
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+
+
+def send_brevo_email(to_email: str, subject: str, html_content: str):
+    """Send email via Brevo API"""
+
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    payload = {
+        "sender": {
+            "name": "Sunpreet Coaching",
+            "email": BREVO_SENDER_EMAIL
+        },
+        "to": [
+            {"email": to_email}
+        ],
+        "subject": subject,
+        "htmlContent": html_content
+    }
+
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code not in (200, 201):
+        raise Exception(f"Brevo API error: {response.text}")
 
 
 async def send_email_async(to_email: str, subject: str, html_content: str):
@@ -166,9 +181,8 @@ async def send_email_async(to_email: str, subject: str, html_content: str):
         await asyncio.to_thread(send_brevo_email, to_email, subject, html_content)
         return True
     except Exception as e:
-        logger.error(f"Failed to send email via Brevo: {str(e)}")
+        logger.error(f"Brevo API send failed: {e}")
         return False
-
 
 # API Routes
 @api_router.get("/")
