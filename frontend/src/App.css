@@ -1,0 +1,194 @@
+/* Custom App Styles */
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* iOS video autoplay fix */
+video {
+  -webkit-transform: translateZ(0);
+}
+video[autoplay] {
+  pointer-events: none;
+}
+
+.App {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Hero section background */
+.hero-bg {
+  background: linear-gradient(to bottom, rgba(28, 25, 23, 0.4), rgba(28, 25, 23, 0.6));
+}
+
+/* Pricing card hover effect */
+.pricing-card {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.pricing-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Gallery grid masonry effect */
+.gallery-masonry {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: 200px;
+  grid-auto-flow: dense;
+  gap: 16px;
+}
+
+.gallery-masonry .tall {
+  grid-row: span 2;
+}
+
+.gallery-masonry .wide {
+  grid-column: span 2;
+}
+
+/* Onboarding step connector line */
+.step-connector {
+  position: relative;
+}
+
+.step-connector::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, #E7E5E4, transparent);
+}
+
+/* Navigation link active state */
+.nav-link-active {
+  position: relative;
+}
+
+.nav-link-active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #1C1917;
+}
+
+/* Testimonial card */
+.testimonial-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.testimonial-card::before {
+  content: '"';
+  position: absolute;
+  top: -20px;
+  left: 20px;
+  font-size: 120px;
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #D6C0A6;
+  opacity: 0.3;
+  line-height: 1;
+}
+
+/* Footer social icon hover */
+.social-icon {
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: translateY(-3px);
+  color: #D6C0A6;
+}
+
+/* Mobile menu animation */
+.mobile-menu-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.mobile-menu-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mobile-menu-exit-active {
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+}
+
+/* Image hover zoom */
+.img-hover-zoom {
+  overflow: hidden;
+}
+
+.img-hover-zoom img {
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.img-hover-zoom:hover img {
+  transform: scale(1.05);
+}
+
+/* Input focus animation */
+.input-animated {
+  position: relative;
+}
+
+.input-animated::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #1C1917;
+  transition: width 0.3s ease;
+}
+
+.input-animated:focus-within::after {
+  width: 100%;
+}
+
+/* Retreat card overlay */
+.retreat-card-overlay {
+  background: linear-gradient(to top, rgba(28, 25, 23, 0.9), transparent);
+}
+
+/* Process step number */
+.step-number {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 4rem;
+  font-weight: 400;
+  color: rgba(214, 192, 166, 0.3);
+  line-height: 1;
+}
+
+/* Lightbox overlay */
+.lightbox-overlay {
+  background: rgba(28, 25, 23, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
