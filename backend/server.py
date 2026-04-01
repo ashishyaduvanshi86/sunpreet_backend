@@ -285,7 +285,7 @@ async def submit_contact_form(request: ContactFormRequest):
 
     # Send confirmation to applicant
     try:
-        confirm_subject = "Your Retreat Application - Sunpreet Singh Coaching" if is_retreat else "Your Inquiry - Sunpreet Singh Coaching"
+        confirm_subject = "TEST EMAIL NEW VERSION"" if is_retreat else "Your Inquiry - Sunpreet Singh Coaching"
         await send_email_async(request.email, confirm_subject, confirm_html)
         logger.info(f"Confirmation email sent to {request.email}")
     except Exception as e:
