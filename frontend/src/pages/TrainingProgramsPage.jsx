@@ -572,8 +572,25 @@ export default function TrainingProgramsPage() {
               })}
             </motion.div>
           </AnimatePresence>
+
+        {/* Program Start Note */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-12 text-center"
+        >
+          <p className="inline-block text-sm text-[#57534E] border border-[#D6C0A6] px-6 py-3 bg-[#F5F5F4]">
+            📅 <span className="font-medium text-[#1C1917]">Note:</span> The next program batch starts from <span className="font-medium text-[#1C1917]">7th April</span>
+          </p>
+        </motion.div>
+
         </div>
       </section>
+
+      {/* My Approach */}
+
+      
 
       {/* My Approach */}
       <section className="py-24 md:py-32 bg-[#1C1917]" data-testid="why-structured">
@@ -668,6 +685,11 @@ export default function TrainingProgramsPage() {
               <motion.p variants={fadeInUp} className="text-[#57534E] leading-relaxed mb-8">
                 Download the coaching app to access your personalised training program, watch demo videos, upload form checks, and stay connected with your coach — all in one place.
               </motion.p>
+              <motion.div variants={fadeInUp} className="mt-2 mb-6">
+  <p className="inline-block text-sm text-[#57534E] border border-[#D6C0A6] px-6 py-3 bg-[#F5F5F4]">
+    📅 <span className="font-medium text-[#1C1917]">Note:</span> The next program batch starts from <span className="font-medium text-[#1C1917]">7th April</span>
+  </p>
+</motion.div>
               <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 max-w-sm">
                 <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" data-testid="listing-app-store-link">
                   <div className="flex items-center gap-2 bg-[#1C1917] text-[#FBFBF9] px-3 sm:px-5 py-3 hover:bg-[#1C1917]/90 transition-all cursor-pointer">

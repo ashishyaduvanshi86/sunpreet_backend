@@ -488,7 +488,7 @@ export default function HomePage() {
                 >
                   <VideoThumbnail
                     src={testimonial.video_url}
-                    imageUrl={testimonial.image_url}
+                    imageUrl={`${process.env.REACT_APP_BACKEND_URL}${testimonial.image_url}`}
                     onClick={() => setPlayingVideo(testimonial.id)}
                   />
                 </div>

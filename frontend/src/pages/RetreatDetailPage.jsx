@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import { getRetreatById } from '../data/retreats';
 
-const WHATSAPP_NUMBER = '918107722137';
+const WHATSAPP_NUMBER = '918595146962';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },

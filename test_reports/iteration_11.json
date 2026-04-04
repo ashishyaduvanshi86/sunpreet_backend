@@ -1,5 +1,5 @@
 {
-  "summary": "Completed comprehensive frontend testing of the new retreat detail page features: Book Now button, Your Rooms section, and Get Brochure form. All 14 test scenarios passed. Hero CTA changed from 'Request an Invite' to 'Book Now' which opens WhatsApp (wa.me/918107722137) with retreat details. New 'Your Rooms' section added after 'Your Stay' showing 2 room cards with images, titles, descriptions, and amenity tags. Bottom section changed from 'Request an Invite' form to 'Get Brochure' form with WhatsApp integration.",
+  "summary": "Completed comprehensive frontend testing of the new retreat detail page features: Book Now button, Your Rooms section, and Get Brochure form. All 14 test scenarios passed. Hero CTA changed from 'Request an Invite' to 'Book Now' which opens WhatsApp (wa.me/918595146962) with retreat details. New 'Your Rooms' section added after 'Your Stay' showing 2 room cards with images, titles, descriptions, and amenity tags. Bottom section changed from 'Request an Invite' form to 'Get Brochure' form with WhatsApp integration.",
 
   "backend_issues": {
     "critical": [],
@@ -15,7 +15,7 @@
   "passed_tests": [
     "Hero 'Book Now' button is visible on /retreats/bali-2026",
     "Hero 'Book Now' button is visible on /retreats/gulmarg-2027",
-    "Clicking 'Book Now' opens WhatsApp link (wa.me/918107722137) with correct retreat name, date, price in message",
+    "Clicking 'Book Now' opens WhatsApp link (wa.me/918595146962) with correct retreat name, date, price in message",
     "'Your Rooms' section is visible after 'Your Stay' on Bali retreat page with 2 room cards (Twin Sharing Room, Private Villa)",
     "'Your Rooms' section is visible on Gulmarg retreat page with 2 room cards (Mountain View Room, Premium Cabin)",
     "Room cards show image, title, description, and amenity tags (4 amenities per room)",
@@ -50,5 +50,5 @@
 
   "should_main_agent_self_test": false,
 
-  "context_for_next_testing_agent": "Retreat Detail Page updated with 3 new features: 1) Hero CTA 'Book Now' opens WhatsApp (wa.me/918107722137) with retreat details via buildWhatsAppUrl() function. 2) 'Your Rooms' section (data-testid='your-rooms') shows room cards (data-testid='room-{idx}') with images, titles, descriptions, amenities from retreat.rooms array. 3) 'Get Brochure' section (data-testid='get-brochure') replaced 'Request an Invite' - form fields: brochure-name, brochure-phone, brochure-email (required), brochure-message (optional), brochure-submit. Form submission opens WhatsApp with all user details. No backend API calls - all client-side WhatsApp URL construction. Bali rooms: Twin Sharing Room, Private Villa. Gulmarg rooms: Mountain View Room, Premium Cabin."
+  "context_for_next_testing_agent": "Retreat Detail Page updated with 3 new features: 1) Hero CTA 'Book Now' opens WhatsApp (wa.me/918595146962) with retreat details via buildWhatsAppUrl() function. 2) 'Your Rooms' section (data-testid='your-rooms') shows room cards (data-testid='room-{idx}') with images, titles, descriptions, amenities from retreat.rooms array. 3) 'Get Brochure' section (data-testid='get-brochure') replaced 'Request an Invite' - form fields: brochure-name, brochure-phone, brochure-email (required), brochure-message (optional), brochure-submit. Form submission opens WhatsApp with all user details. No backend API calls - all client-side WhatsApp URL construction. Bali rooms: Twin Sharing Room, Private Villa. Gulmarg rooms: Mountain View Room, Premium Cabin."
 }
