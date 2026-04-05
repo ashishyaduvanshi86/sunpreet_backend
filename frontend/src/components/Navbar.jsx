@@ -56,7 +56,7 @@ export default function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled ? 'glass py-4' : 'bg-transparent py-6'
+          isScrolled ? 'glass py-4' : isHomePage ? 'bg-gradient-to-b from-black/50 to-transparent py-6' : 'bg-[#FBFBF9]/90 backdrop-blur-sm py-6'
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
@@ -123,7 +123,9 @@ export default function Navbar() {
               {/* Mobile Cart Icon */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 text-[#1C1917]"
+                className={`relative p-2 transition-colors duration-300 ${
+                  isHomePage && !isScrolled ? 'text-[#FBFBF9]' : 'text-[#1C1917]'
+                }`}
                 data-testid="mobile-cart-btn"
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -139,9 +141,9 @@ export default function Navbar() {
                 className="relative z-10 p-2"
               >
                 {isMobileMenuOpen ? (
-                  <X className="w-6 h-6 text-[#1C1917]" />
+                  <X className={`w-6 h-6 ${isHomePage && !isScrolled ? 'text-[#FBFBF9]' : 'text-[#1C1917]'}`} />
                 ) : (
-                  <Menu className="w-6 h-6 text-[#1C1917]" />
+                  <Menu className={`w-6 h-6 ${isHomePage && !isScrolled ? 'text-[#FBFBF9]' : 'text-[#1C1917]'}`} />
                 )}
               </button>
             </div>

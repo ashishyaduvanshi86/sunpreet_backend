@@ -116,10 +116,10 @@ export default function ContactPage() {
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-1">Email</p>
                     <a 
-                      href="mailto:ssccoaching2026@gmail.com" 
+                      href="mailto:coaching@sunpreetsingh.com" 
                       className="text-[#1C1917] hover:text-[#D6C0A6] transition-colors"
                     >
-                      ssccoaching2026@gmail.com
+                      coaching@sunpreetsingh.com
                     </a>
                   </div>
                 </div>

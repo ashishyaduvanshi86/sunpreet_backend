@@ -27,6 +27,7 @@ const programs = [
     icon: Target,
     color: '#D6C0A6',
     image: 'https://customer-assets.emergentagent.com/job_069d6dd5-2200-4cc6-81fe-4b0e1eaff528/artifacts/m3estfyl_DSC02319.JPG',
+    programLink: 'https://links.spur.fit/r/pZ/sunpreet-singh/strong-n-mobile--foundational',
     problem: {
       headline: 'Why Most People Never Build a Strong Foundation',
       points: [
@@ -74,6 +75,7 @@ const programs = [
     icon: Dumbbell,
     color: '#A8A29E',
     image: 'https://customer-assets.emergentagent.com/job_075373c5-0904-4300-a194-369619411e36/artifacts/qmrid5pu_IMG_5232.jpeg',
+    programLink: 'https://links.spur.fit/r/q2/sunpreet-singh/strong-n-mobile--beginner',
     problem: {
       headline: 'Why Progress Stalls After the Basics',
       points: [
@@ -125,6 +127,7 @@ const programs = [
     icon: Zap,
     color: '#78716C',
     image: 'https://customer-assets.emergentagent.com/job_069d6dd5-2200-4cc6-81fe-4b0e1eaff528/artifacts/3ite2ww5_s.jpg',
+    programLink: 'https://links.spur.fit/r/q1/sunpreet-singh/strong-n-mobile--intermediate',
     problem: {
       headline: 'Why Intermediate Athletes Get Stuck',
       points: [
@@ -230,11 +233,11 @@ function ProgramDetail({ program, onBack }) {
               {program.setting && <span className="px-3 py-1 border border-[#A8A29E]/30">{program.setting}</span>}
             </motion.div>
             <motion.div variants={fadeInUp}>
-              <Link to="/contact">
+              <a href={program.programLink} target="_blank" rel="noopener noreferrer">
                 <Button className="bg-[#D6C0A6] text-[#1C1917] h-14 px-10 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#FBFBF9] transition-all duration-300" data-testid="detail-start-btn">
                   Start Program <ArrowRight className="w-4 h-4 ml-3" />
                 </Button>
-              </Link>
+              </a>
             </motion.div>
           </motion.div>
         </div>
@@ -337,24 +340,11 @@ function ProgramDetail({ program, onBack }) {
                   </li>
                 ))}
               </motion.ul>
-              <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 max-w-sm">
-                <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" data-testid="app-store-link">
-                  <div className="flex items-center gap-2 bg-[#1C1917] text-[#FBFBF9] px-3 sm:px-5 py-3 hover:bg-[#1C1917]/90 transition-all cursor-pointer">
-                    <svg viewBox="0 0 24 24" className="w-5 sm:w-7 h-5 sm:h-7 fill-current flex-shrink-0"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                    <div>
-                      <p className="text-[8px] sm:text-[10px] leading-none opacity-70">Download on the</p>
-                      <p className="text-xs sm:text-base font-medium leading-tight">App Store</p>
-                    </div>
-                  </div>
-                </a>
-                <a href="https://play.google.com" target="_blank" rel="noopener noreferrer" data-testid="play-store-link">
-                  <div className="flex items-center gap-2 bg-[#1C1917] text-[#FBFBF9] px-3 sm:px-5 py-3 hover:bg-[#1C1917]/90 transition-all cursor-pointer">
-                    <svg viewBox="0 0 24 24" className="w-5 sm:w-7 h-5 sm:h-7 fill-current flex-shrink-0"><path d="M3.18 23.67c-.37-.2-.55-.57-.55-1.02V1.35c0-.45.18-.82.55-1.02l11.07 11.67L3.18 23.67zM15.72 13.53l2.82 1.63-3.5 2.01-2.07-2.18 2.75-1.46zm3.5-3.32L15.72 12l-2.75-1.46 2.07-2.18 4.18 1.85zM5.07.26l10.16 10.7L5.07.26l9.6 10.13L5.07.26z"/><path d="M14.25 12L5.07.26c-.19-.11-.39-.2-.6-.24L15.72 12l-1.47 0zM5.07 23.74l9.18-9.74 1.47 0L4.47 23.98c.21-.04.41-.13.6-.24z"/><path d="M20.16 10.91l-2.94 1.62L15.72 12l1.5-1.53 2.94 1.44zM17.22 13.47l2.94 1.44-2.94 1.62-1.5-1.53 1.5-1.53z"/></svg>
-                    <div>
-                      <p className="text-[8px] sm:text-[10px] leading-none opacity-70">Get it on</p>
-                      <p className="text-xs sm:text-base font-medium leading-tight">Google Play</p>
-                    </div>
-                  </div>
+              <motion.div variants={fadeInUp}>
+                <a href="https://links.spur.fit/r/pY/sunpreet-singh" target="_blank" rel="noopener noreferrer" data-testid="select-program-link">
+                  <Button className="bg-[#1C1917] text-[#FBFBF9] h-14 px-10 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all duration-300">
+                    Select Program <ArrowRight className="w-4 h-4 ml-3" />
+                  </Button>
                 </a>
               </motion.div>
             </motion.div>
@@ -439,11 +429,11 @@ function ProgramDetail({ program, onBack }) {
               Stop guessing. Start progressing. Your structured path to real strength and mobility begins here.
             </motion.p>
             <motion.div variants={fadeInUp}>
-              <Link to="/contact">
+              <a href={program.programLink} target="_blank" rel="noopener noreferrer">
                 <Button className="bg-[#1C1917] text-[#FBFBF9] h-14 px-12 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#1C1917]/90 transition-all" data-testid="final-start-btn">
                   Start {program.name.split('—')[1]?.trim() || 'Program'} <ArrowRight className="w-4 h-4 ml-3" />
                 </Button>
-              </Link>
+              </a>
             </motion.div>
           </motion.div>
         </div>
@@ -560,37 +550,22 @@ export default function TrainingProgramsPage() {
                         {program.name}
                       </h3>
                       <p className="text-[#57534E] text-sm leading-relaxed mb-6 flex-1 whitespace-pre-line">{program.shortDesc}</p>
-                      <Button
-                        className="w-full bg-[#1C1917] text-[#FBFBF9] h-12 text-xs uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all duration-300"
-                        data-testid={`start-program-${program.id}`}
-                      >
-                        Start Program <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
+                      <a href={program.programLink} target="_blank" rel="noopener noreferrer" className="w-full">
+                        <Button
+                          className="w-full bg-[#1C1917] text-[#FBFBF9] h-12 text-xs uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all duration-300"
+                          data-testid={`start-program-${program.id}`}
+                        >
+                          Start Program <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </a>
                     </div>
                   </motion.div>
                 );
               })}
             </motion.div>
           </AnimatePresence>
-
-        {/* Program Start Note */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-12 text-center"
-        >
-          <p className="inline-block text-sm text-[#57534E] border border-[#D6C0A6] px-6 py-3 bg-[#F5F5F4]">
-            📅 <span className="font-medium text-[#1C1917]">Note:</span> The next program batch starts from <span className="font-medium text-[#1C1917]">7th April</span>
-          </p>
-        </motion.div>
-
         </div>
       </section>
-
-      {/* My Approach */}
-
-      
 
       {/* My Approach */}
       <section className="py-24 md:py-32 bg-[#1C1917]" data-testid="why-structured">
@@ -685,29 +660,11 @@ export default function TrainingProgramsPage() {
               <motion.p variants={fadeInUp} className="text-[#57534E] leading-relaxed mb-8">
                 Download the coaching app to access your personalised training program, watch demo videos, upload form checks, and stay connected with your coach — all in one place.
               </motion.p>
-              <motion.div variants={fadeInUp} className="mt-2 mb-6">
-  <p className="inline-block text-sm text-[#57534E] border border-[#D6C0A6] px-6 py-3 bg-[#F5F5F4]">
-    📅 <span className="font-medium text-[#1C1917]">Note:</span> The next program batch starts from <span className="font-medium text-[#1C1917]">7th April</span>
-  </p>
-</motion.div>
-              <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 max-w-sm">
-                <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" data-testid="listing-app-store-link">
-                  <div className="flex items-center gap-2 bg-[#1C1917] text-[#FBFBF9] px-3 sm:px-5 py-3 hover:bg-[#1C1917]/90 transition-all cursor-pointer">
-                    <svg viewBox="0 0 24 24" className="w-5 sm:w-7 h-5 sm:h-7 fill-current flex-shrink-0"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                    <div>
-                      <p className="text-[8px] sm:text-[10px] leading-none opacity-70">Download on the</p>
-                      <p className="text-xs sm:text-base font-medium leading-tight">App Store</p>
-                    </div>
-                  </div>
-                </a>
-                <a href="https://play.google.com" target="_blank" rel="noopener noreferrer" data-testid="listing-play-store-link">
-                  <div className="flex items-center gap-2 bg-[#1C1917] text-[#FBFBF9] px-3 sm:px-5 py-3 hover:bg-[#1C1917]/90 transition-all cursor-pointer">
-                    <svg viewBox="0 0 24 24" className="w-5 sm:w-7 h-5 sm:h-7 fill-current flex-shrink-0"><path d="M3.18 23.67c-.37-.2-.55-.57-.55-1.02V1.35c0-.45.18-.82.55-1.02l11.07 11.67L3.18 23.67zM15.72 13.53l2.82 1.63-3.5 2.01-2.07-2.18 2.75-1.46zm3.5-3.32L15.72 12l-2.75-1.46 2.07-2.18 4.18 1.85zM5.07.26l10.16 10.7L5.07.26l9.6 10.13L5.07.26z"/><path d="M14.25 12L5.07.26c-.19-.11-.39-.2-.6-.24L15.72 12l-1.47 0zM5.07 23.74l9.18-9.74 1.47 0L4.47 23.98c.21-.04.41-.13.6-.24z"/><path d="M20.16 10.91l-2.94 1.62L15.72 12l1.5-1.53 2.94 1.44zM17.22 13.47l2.94 1.44-2.94 1.62-1.5-1.53 1.5-1.53z"/></svg>
-                    <div>
-                      <p className="text-[8px] sm:text-[10px] leading-none opacity-70">Get it on</p>
-                      <p className="text-xs sm:text-base font-medium leading-tight">Google Play</p>
-                    </div>
-                  </div>
+              <motion.div variants={fadeInUp}>
+                <a href="https://links.spur.fit/r/pY/sunpreet-singh" target="_blank" rel="noopener noreferrer" data-testid="listing-select-program-link">
+                  <Button className="bg-[#1C1917] text-[#FBFBF9] h-14 px-10 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all duration-300">
+                    Select Program <ArrowRight className="w-4 h-4 ml-3" />
+                  </Button>
                 </a>
               </motion.div>
             </motion.div>
@@ -725,10 +682,15 @@ export default function TrainingProgramsPage() {
             <motion.p variants={fadeInUp} className="text-[#1C1917]/70 max-w-xl mx-auto mb-10">
               Book a free consultation call and we'll help you choose the right program based on your goals and experience level.
             </motion.p>
-            <motion.div variants={fadeInUp}>
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a href="https://links.spur.fit/r/pY/sunpreet-singh" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-[#1C1917] text-[#FBFBF9] h-14 px-12 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#1C1917]/90 transition-all" data-testid="programs-select-btn">
+                  Select Program <ArrowRight className="w-4 h-4 ml-3" />
+                </Button>
+              </a>
               <Link to="/contact">
-                <Button className="bg-[#1C1917] text-[#FBFBF9] h-14 px-12 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#1C1917]/90 transition-all" data-testid="programs-consult-btn">
-                  Book a Free Consultation <ArrowRight className="w-4 h-4 ml-3" />
+                <Button variant="outline" className="border-[#1C1917] text-[#1C1917] h-14 px-12 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#1C1917] hover:text-[#FBFBF9] transition-all" data-testid="programs-consult-btn">
+                  Book a Free Consultation
                 </Button>
               </Link>
             </motion.div>

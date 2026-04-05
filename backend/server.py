@@ -22,10 +22,14 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Brevo API configuration
+# Brevo API configuration (default - for retreats)
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY')
 BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', 'ssccoaching2026@gmail.com')
 RECIPIENT_EMAIL = os.environ.get('RECIPIENT_EMAIL', 'ssccoaching2026@gmail.com')
+
+# Brevo API configuration (coaching - for contact & shop)
+BREVO_COACHING_API_KEY = os.environ.get('BREVO_COACHING_API_KEY')
+BREVO_COACHING_EMAIL = os.environ.get('BREVO_COACHING_EMAIL', 'coaching@sunpreetsingh.com')
 
 # Razorpay configuration (Test Keys)
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_1DP5mmOlF5G5ag')
@@ -138,11 +142,20 @@ class ProductStockResponse(BaseModel):
 
 
 # Brevo API Email Utility
-async def send_email_async(to_email: str, subject: str, html_content: str, reply_to: str = None):
-    """Send email via Brevo HTTP API"""
+async def send_email_async(to_email: str, subject: str, html_content: str, reply_to: str = None, channel: str = "default"):
+    """Send email via Brevo HTTP API. channel='coaching' uses coaching@sunpreetsingh.com credentials."""
+    if channel == "coaching" and BREVO_COACHING_API_KEY:
+        api_key = BREVO_COACHING_API_KEY
+        sender_email = BREVO_COACHING_EMAIL
+        sender_name = "Sunpreet Singh Coaching"
+    else:
+        api_key = BREVO_API_KEY
+        sender_email = BREVO_SENDER_EMAIL
+        sender_name = "Sunpreet Singh Coaching"
+
     url = "https://api.brevo.com/v3/smtp/email"
     payload = {
-        "sender": {"name": "Sunpreet Singh Coaching", "email": BREVO_SENDER_EMAIL},
+        "sender": {"name": sender_name, "email": sender_email},
         "to": [{"email": to_email}],
         "subject": subject,
         "htmlContent": html_content,
@@ -151,14 +164,14 @@ async def send_email_async(to_email: str, subject: str, html_content: str, reply
         payload["replyTo"] = {"email": reply_to}
     headers = {
         "accept": "application/json",
-        "api-key": BREVO_API_KEY,
+        "api-key": api_key,
         "content-type": "application/json",
     }
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, json=payload, headers=headers, timeout=15)
             if resp.status_code == 201:
-                logger.info(f"Email sent to {to_email} via Brevo API")
+                logger.info(f"Email sent to {to_email} via Brevo API ({channel})")
                 return True
             else:
                 logger.error(f"Brevo API error {resp.status_code}: {resp.text}")
@@ -274,11 +287,15 @@ async def submit_contact_form(request: ContactFormRequest):
     </html>
     """
 
+    # Determine email channel: coaching for non-retreat, default for retreat
+    email_channel = "default" if is_retreat else "coaching"
+    admin_email = RECIPIENT_EMAIL if is_retreat else BREVO_COACHING_EMAIL
+
     # Try to send emails via Brevo
     try:
-        await send_email_async(RECIPIENT_EMAIL, subject, html_content)
+        await send_email_async(admin_email, subject, html_content, channel=email_channel)
         email_sent = True
-        logger.info(f"Email sent successfully via Brevo to {RECIPIENT_EMAIL}")
+        logger.info(f"Email sent successfully via Brevo to {admin_email}")
     except Exception as e:
         logger.error(f"Failed to send email: {str(e)}")
         email_sent = False
@@ -286,7 +303,7 @@ async def submit_contact_form(request: ContactFormRequest):
     # Send confirmation to applicant
     try:
         confirm_subject = "Your Retreat Application - Sunpreet Singh Coaching" if is_retreat else "Your Inquiry - Sunpreet Singh Coaching"
-        await send_email_async(request.email, confirm_subject, confirm_html)
+        await send_email_async(request.email, confirm_subject, confirm_html, channel=email_channel)
         logger.info(f"Confirmation email sent to {request.email}")
     except Exception as e:
         logger.error(f"Failed to send confirmation email to {request.email}: {str(e)}")
@@ -486,7 +503,7 @@ async def notify_me(request: NotifyMeRequest):
     </html>
     """
     try:
-        await send_email_async(request.email, f"You're on the Waitlist - {name}", confirm_html)
+        await send_email_async(request.email, f"You're on the Waitlist - {name}", confirm_html, channel="coaching")
         logger.info(f"Notify confirmation email sent to {request.email}")
     except Exception as e:
         logger.error(f"Failed to send notify confirmation to {request.email}: {e}")
@@ -522,7 +539,7 @@ async def notify_me(request: NotifyMeRequest):
     </html>
     """
     try:
-        await send_email_async(RECIPIENT_EMAIL, f"New Waitlist Signup for {name} - {request.email}", admin_html)
+        await send_email_async(BREVO_COACHING_EMAIL, f"New Waitlist Signup for {name} - {request.email}", admin_html, channel="coaching")
         logger.info(f"Admin notification sent for waitlist signup: {request.email}")
     except Exception as e:
         logger.error(f"Failed to send admin waitlist notification: {e}")
@@ -577,7 +594,7 @@ async def toggle_coming_soon(product_id: str, coming_soon: bool):
             </body></html>
             """
             try:
-                await send_email_async(sub['email'], f"{name} is Now Available!", html)
+                await send_email_async(sub['email'], f"{name} is Now Available!", html, channel="coaching")
                 await db.product_notifications.update_one(
                     {"email": sub['email'], "product_id": product_id},
                     {"$set": {"notified": True}},
@@ -718,8 +735,8 @@ async def verify_payment(request: VerifyPaymentRequest):
             </html>
             """
 
-            await send_email_async(order['customer_email'], "Order Confirmed - Sunpreet Singh Coaching", html_content)
-            await send_email_async(RECIPIENT_EMAIL, f"New Order from {order['customer_name']}", html_content)
+            await send_email_async(order['customer_email'], "Order Confirmed - Sunpreet Singh Coaching", html_content, channel="coaching")
+            await send_email_async(BREVO_COACHING_EMAIL, f"New Order from {order['customer_name']}", html_content, channel="coaching")
         except Exception as email_error:
             logger.error(f"Failed to send confirmation email: {str(email_error)}")
         

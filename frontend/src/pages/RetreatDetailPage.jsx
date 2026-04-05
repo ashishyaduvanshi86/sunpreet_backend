@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import { getRetreatById } from '../data/retreats';
 
-const WHATSAPP_NUMBER = '918595146962';
+const WHATSAPP_NUMBER = '919717665603';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -374,7 +374,7 @@ export default function RetreatDetailPage() {
               </motion.div>
             </div>
             <motion.div variants={fadeInUp} className="space-y-2">
-              <p className="text-sm text-[#A8A29E]">{retreat.pricing.deposit}</p>
+              {retreat.pricing.deposit && <p className="text-sm text-[#A8A29E]">{retreat.pricing.deposit}</p>}
               <p className="text-sm text-[#A8A29E]">{retreat.pricing.balanceDue}</p>
             </motion.div>
           </motion.div>

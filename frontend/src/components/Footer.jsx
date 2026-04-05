@@ -11,6 +11,12 @@ const footerLinks = [
   { name: 'Contact', path: '/contact' },
 ];
 
+const programLinks = [
+  { name: 'Start Foundation', url: 'https://links.spur.fit/r/pZ/sunpreet-singh/strong-n-mobile--foundational' },
+  { name: 'Start Beginner', url: 'https://links.spur.fit/r/q2/sunpreet-singh/strong-n-mobile--beginner' },
+  { name: 'Start Intermediate', url: 'https://links.spur.fit/r/q1/sunpreet-singh/strong-n-mobile--intermediate' },
+];
+
 const policyContent = {
   terms: {
     title: 'Terms & Conditions',
@@ -22,7 +28,7 @@ const policyContent = {
       { heading: 'Intellectual Property', text: 'All content, programs, and materials are the property of Sunpreet Singh Coaching and may not be shared or reproduced without permission.' },
       { heading: 'Chargebacks & Disputes', text: 'For any billing concerns, please contact us first. Chargebacks raised without prior communication may result in termination of services and submission of evidence to the payment provider.' },
       { heading: 'Limitation of Liability', text: 'Sunpreet Singh Coaching is not liable for any physical, financial, or personal outcomes resulting from the use of our services.' },
-      { heading: 'Contact', text: 'Email: sunpreetsinghcoaching@gmail.com' },
+      { heading: 'Contact', text: 'Email: coaching@sunpreetsingh.com' },
     ]
   },
   privacy: {
@@ -34,7 +40,7 @@ const policyContent = {
       { heading: 'Data Sharing', text: 'We do not sell, rent, or share your personal data with unauthorized third parties. Information is shared only when required for payment processing or legal compliance.' },
       { heading: 'Cookies & Analytics', text: 'This website may use cookies and basic analytics tools to understand usage patterns and improve user experience.' },
       { heading: 'Your Consent', text: 'By using this website or services, you consent to this Privacy Policy.' },
-      { heading: 'Contact', text: 'For any privacy-related concerns, contact us at:\nEmail: sunpreetsinghcoaching@gmail.com' },
+      { heading: 'Contact', text: 'For any privacy-related concerns, contact us at:\nEmail: coaching@sunpreetsingh.com' },
     ]
   },
   refund: {
@@ -46,14 +52,14 @@ const policyContent = {
       { heading: 'Cancellation', text: 'Cancellations must be requested via email before the start of the service. Once the program or session begins, cancellations will not be eligible for a refund.' },
       { heading: 'Refund Processing', text: 'Approved refunds will be processed within 10\u201315 working days to the original payment method used at the time of purchase.' },
       { heading: 'Payment Disputes', text: 'For any billing or payment concerns, please contact us directly before initiating a chargeback or dispute. Unresolved chargebacks may result in termination of services and submission of relevant evidence to the payment provider.' },
-      { heading: 'Contact', text: 'For refund or cancellation requests, email us at:\nsunpreetsinghcoaching@gmail.com' },
+      { heading: 'Contact', text: 'For refund or cancellation requests, email us at:\ncoaching@sunpreetsingh.com' },
     ]
   },
   contact: {
     title: 'Contact',
     sections: [
       { text: 'If you have any questions related to coaching services, payments, refunds, or general inquiries, please feel free to contact us.' },
-      { heading: 'Email', text: 'sunpreetsinghcoaching@gmail.com' },
+      { heading: 'Email', text: 'coaching@sunpreetsingh.com' },
       { text: 'We aim to respond to all queries within 48 working hours.' },
     ]
   }
@@ -123,7 +129,7 @@ export default function Footer() {
 
   const socialLinks = [
     { name: 'Instagram', icon: Instagram, url: instagramUrl },
-    { name: 'Email', icon: Mail, url: 'mailto:ssccoaching2026@gmail.com' },
+    { name: 'Email', icon: Mail, url: 'mailto:coaching@sunpreetsingh.com' },
   ];
 
   return (
@@ -174,6 +180,24 @@ export default function Footer() {
                     >
                       {link.name}
                     </Link>
+                  </li>
+                ))}
+              </ul>
+              <h4 className="text-xs uppercase tracking-[0.2em] font-semibold text-[#D6C0A6] mb-4 mt-8">
+                Programs
+              </h4>
+              <ul className="space-y-4">
+                {programLinks.map((link) => (
+                  <li key={link.name}>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-testid={`footer-link-${link.name.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="text-[#A8A29E] hover:text-[#FBFBF9] transition-colors duration-300 text-sm underline-hover"
+                    >
+                      {link.name}
+                    </a>
                   </li>
                 ))}
               </ul>

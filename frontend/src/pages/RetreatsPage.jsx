@@ -39,6 +39,7 @@ const upcomingRetreats = [
   },
   {
     id: 'gulmarg-2027',
+    comingSoon: true,
     title: 'The Snow Playground',
     subtitle: 'A winter escape blending skiing, movement, and mountain living.',
     location: 'Gulmarg, Kashmir',
@@ -307,6 +308,11 @@ export default function RetreatsPage() {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1C1917]/70 to-transparent" />
+                    {retreat.comingSoon && (
+                      <div className="absolute top-4 right-4 bg-[#D6C0A6] text-[#1C1917] px-4 py-1.5 text-xs uppercase tracking-[0.2em] font-semibold">
+                        Coming Soon
+                      </div>
+                    )}
                     <div className="absolute bottom-6 left-6 right-6">
                       <div className="flex items-center gap-2 text-[#D6C0A6] mb-2">
                         <IconComponent className="w-4 h-4" />
@@ -321,29 +327,55 @@ export default function RetreatsPage() {
                       <span>{retreat.date}</span>
                       <span className="text-[#E7E5E4]">|</span>
                       <span>{retreat.duration}</span>
+                      {retreat.comingSoon && (
+                        <span className="ml-auto text-xs uppercase tracking-[0.15em] bg-[#D6C0A6] text-[#1C1917] px-3 py-1 font-medium">Coming Soon</span>
+                      )}
                     </div>
                     {retreat.subtitle && (
                       <p className="text-[#57534E] text-sm italic mb-4">{retreat.subtitle}</p>
                     )}
                     <p className="text-[#57534E] text-sm leading-relaxed mb-6">{retreat.description}</p>
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <Button
-                        onClick={() => openApplyModal(retreat)}
-                        className="bg-[#1C1917] text-[#FBFBF9] h-12 px-6 text-xs uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all duration-300 flex-1"
-                        data-testid={`apply-retreat-${retreat.id}`}
-                      >
-                        Request an Invite
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                      <Link to={`/retreats/${retreat.id}`}>
-                        <Button
-                          variant="outline"
-                          className="border-[#1C1917] text-[#1C1917] h-12 px-6 text-xs uppercase tracking-[0.15em] rounded-none hover:bg-[#1C1917] hover:text-[#FBFBF9] transition-all duration-300 w-full"
-                          data-testid={`details-retreat-${retreat.id}`}
-                        >
-                          View Details
-                        </Button>
-                      </Link>
+                      {retreat.comingSoon ? (
+                        <>
+                          <Button
+                            onClick={() => openApplyModal(retreat)}
+                            className="bg-[#1C1917] text-[#FBFBF9] h-12 px-6 text-xs uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all duration-300 flex-1"
+                            data-testid={`apply-retreat-${retreat.id}`}
+                          >
+                            Request an Invite
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                          <Button
+                            disabled
+                            variant="outline"
+                            className="border-[#E7E5E4] text-[#A8A29E] h-12 px-6 text-xs uppercase tracking-[0.15em] rounded-none cursor-not-allowed flex-1"
+                            data-testid={`details-retreat-${retreat.id}`}
+                          >
+                            View Details
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={() => openApplyModal(retreat)}
+                            className="bg-[#1C1917] text-[#FBFBF9] h-12 px-6 text-xs uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all duration-300 flex-1"
+                            data-testid={`apply-retreat-${retreat.id}`}
+                          >
+                            Request an Invite
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                          <Link to={`/retreats/${retreat.id}`}>
+                            <Button
+                              variant="outline"
+                              className="border-[#1C1917] text-[#1C1917] h-12 px-6 text-xs uppercase tracking-[0.15em] rounded-none hover:bg-[#1C1917] hover:text-[#FBFBF9] transition-all duration-300 w-full"
+                              data-testid={`details-retreat-${retreat.id}`}
+                            >
+                              View Details
+                            </Button>
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
                 </motion.div>

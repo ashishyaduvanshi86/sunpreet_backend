@@ -15,7 +15,7 @@ Build a visually appealing and animated coaching website for "Sunpreet Singh" wi
 - [x] **Brevo SMTP email integration** — replaces broken Resend, used for contact form + product notifications
 - [x] Contact form with working email delivery via Brevo
 - [x] Retreats page with gallery lightbox and registration modal
-- [x] **Retreat Detail Page** (`/retreats/:retreatId`) — Hero with "Book Now" (WhatsApp), At a Glance, Your Stay, **Your Rooms** (room cards with amenities), What Awaits You, Inclusions/Exclusions, Sample Itinerary (accordion), Gallery (masonry + lightbox), Pricing, **Get Brochure** form (opens WhatsApp with retreat + user details to +91 8595146962). Two retreats: Bali 2026 & Gulmarg 2027.
+- [x] **Retreat Detail Page** (`/retreats/:retreatId`) — Hero with "Book Now" (WhatsApp), At a Glance, Your Stay, **Your Rooms** (room cards with amenities), What Awaits You, Inclusions/Exclusions, Sample Itinerary (accordion), Gallery (masonry + lightbox), Pricing, **Get Brochure** form (opens WhatsApp with retreat + user details to +91 8107722137). Two retreats: Bali 2026 & Gulmarg 2027.
 - [x] E-commerce shop: 4 products (Handstand Canes, Fingerboard, Peg Board, Parallettes)
 - [x] **Product Detail Page** (`/shop/:productId`) — image gallery, thumbnails, tabs, quantity selector, "You May Also Like"
 - [x] **Coming Soon state** — all products show "Coming Soon" badge + "Notify Me" button
