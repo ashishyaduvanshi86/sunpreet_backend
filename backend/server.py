@@ -66,6 +66,8 @@ class StatusCheckCreate(BaseModel):
 
 class ContactFormRequest(BaseModel):
     first_name: str
+    age: str
+    location: str
     email: EmailStr
     phone: str
     instagram: Optional[str] = None
@@ -75,6 +77,8 @@ class ContactFormRequest(BaseModel):
 class ContactFormResponse(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     first_name: str
+    age: str
+    location: str
     email: str
     phone: str
     instagram: Optional[str] = None
@@ -238,6 +242,14 @@ async def submit_contact_form(request: ContactFormRequest):
                     <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.phone}</td>
                 </tr>
                 <tr>
+    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Age:</td>
+    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.age}</td>
+</tr>
+<tr>
+    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Location:</td>
+    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.location}</td>
+</tr>
+                <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Instagram:</td>
                     <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.instagram or 'Not provided'}</td>
                 </tr>
@@ -310,20 +322,24 @@ async def submit_contact_form(request: ContactFormRequest):
     
     # Save to database
     contact_doc = {
-        "id": contact_id,
-        "first_name": request.first_name,
-        "email": request.email,
-        "phone": request.phone,
-        "instagram": request.instagram,
-        "message": request.message,
-        "submitted_at": submitted_at.isoformat(),
-        "email_sent": email_sent
-    }
+    "id": contact_id,
+    "first_name": request.first_name,
+    "age": request.age,
+    "location": request.location,
+    "email": request.email,
+    "phone": request.phone,
+    "instagram": request.instagram,
+    "message": request.message,
+    "submitted_at": submitted_at.isoformat(),
+    "email_sent": email_sent
+}
     await db.contact_submissions.insert_one(contact_doc)
     
     return ContactFormResponse(
         id=contact_id,
         first_name=request.first_name,
+        age=request.age,
+        location=request.location,
         email=request.email,
         phone=request.phone,
         instagram=request.instagram,
