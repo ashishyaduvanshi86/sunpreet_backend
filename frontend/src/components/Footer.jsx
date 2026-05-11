@@ -12,9 +12,9 @@ const footerLinks = [
 ];
 
 const programLinks = [
-  { name: 'Start Foundation', url: 'https://links.spur.fit/r/pZ/sunpreet-singh/strong-n-mobile--foundational' },
-  { name: 'Start Beginner', url: 'https://links.spur.fit/r/q2/sunpreet-singh/strong-n-mobile--beginner' },
-  { name: 'Start Intermediate', url: 'https://links.spur.fit/r/q1/sunpreet-singh/strong-n-mobile--intermediate' },
+  { name: 'Start Foundation', url: 'https://links.spur.fit/r/qh/sunpreet-singh/strong-n-mobile--foundational' },
+  { name: 'Start Beginner', url: 'https://links.spur.fit/r/qi/sunpreet-singh/strong-n-mobile---beginner' },
+  { name: 'Start Intermediate', url: 'https://links.spur.fit/r/qj/sunpreet-singh/strong-n-mobile---intermediate' },
 ];
 
 const policyContent = {

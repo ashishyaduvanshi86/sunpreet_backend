@@ -66,8 +66,6 @@ class StatusCheckCreate(BaseModel):
 
 class ContactFormRequest(BaseModel):
     first_name: str
-    age: str
-    location: str
     email: EmailStr
     phone: str
     instagram: Optional[str] = None
@@ -77,8 +75,6 @@ class ContactFormRequest(BaseModel):
 class ContactFormResponse(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     first_name: str
-    age: str
-    location: str
     email: str
     phone: str
     instagram: Optional[str] = None
@@ -137,6 +133,18 @@ class VerifyPaymentRequest(BaseModel):
 class NotifyMeRequest(BaseModel):
     email: EmailStr
     product_id: str
+
+class FinancialAidRequest(BaseModel):
+    aid_type: str  # 'student' | 'scholarship' | 'custom'
+    first_name: str
+    email: EmailStr
+    phone: str
+    instagram: str
+    program_interest: str
+    institution: Optional[str] = None
+    student_id: Optional[str] = None
+    discount_requested: Optional[str] = None
+    situation: str
 
 class ProductStockResponse(BaseModel):
     product_id: str
@@ -242,14 +250,6 @@ async def submit_contact_form(request: ContactFormRequest):
                     <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.phone}</td>
                 </tr>
                 <tr>
-    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Age:</td>
-    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.age}</td>
-</tr>
-<tr>
-    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Location:</td>
-    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.location}</td>
-</tr>
-                <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Instagram:</td>
                     <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.instagram or 'Not provided'}</td>
                 </tr>
@@ -322,24 +322,20 @@ async def submit_contact_form(request: ContactFormRequest):
     
     # Save to database
     contact_doc = {
-    "id": contact_id,
-    "first_name": request.first_name,
-    "age": request.age,
-    "location": request.location,
-    "email": request.email,
-    "phone": request.phone,
-    "instagram": request.instagram,
-    "message": request.message,
-    "submitted_at": submitted_at.isoformat(),
-    "email_sent": email_sent
-}
+        "id": contact_id,
+        "first_name": request.first_name,
+        "email": request.email,
+        "phone": request.phone,
+        "instagram": request.instagram,
+        "message": request.message,
+        "submitted_at": submitted_at.isoformat(),
+        "email_sent": email_sent
+    }
     await db.contact_submissions.insert_one(contact_doc)
     
     return ContactFormResponse(
         id=contact_id,
         first_name=request.first_name,
-        age=request.age,
-        location=request.location,
         email=request.email,
         phone=request.phone,
         instagram=request.instagram,
@@ -619,6 +615,147 @@ async def toggle_coming_soon(product_id: str, coming_soon: bool):
                 logger.error(f"Failed to notify {sub['email']}: {e}")
 
     return {"success": True, "product_id": product_id, "coming_soon": coming_soon}
+
+
+# Payment Routes
+@api_router.post("/financial-aid")
+async def submit_financial_aid(request: FinancialAidRequest):
+    """Handle financial aid applications (student / scholarship / custom)"""
+    submitted_at = datetime.now(timezone.utc)
+    aid_label_map = {
+        "student": "Student Discount (20% off)",
+        "scholarship": "Scholarship Application (Free Access for 1 Year)",
+        "custom": "Custom Discount Request",
+    }
+    aid_label = aid_label_map.get(request.aid_type, request.aid_type)
+
+    # Conditional rows
+    extra_rows = ""
+    if request.aid_type == "student":
+        extra_rows += f"""
+            <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Institution:</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.institution or 'Not provided'}</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Student ID:</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.student_id or 'Not provided'}</td>
+            </tr>
+        """
+    if request.aid_type == "custom" and request.discount_requested:
+        extra_rows += f"""
+            <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Discount Requested:</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.discount_requested}</td>
+            </tr>
+        """
+
+    admin_html = f"""
+    <html>
+    <body style="font-family: 'Manrope', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FBFBF9; color: #1C1917;">
+        <div style="background-color: #1C1917; color: #FBFBF9; padding: 30px; text-align: center;">
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 24px;">New Financial Aid Application</h1>
+            <p style="margin: 8px 0 0; color: #D6C0A6; font-size: 13px; letter-spacing: 2px; text-transform: uppercase;">{aid_label}</p>
+        </div>
+        <div style="padding: 30px; background-color: #FFFFFF; border: 1px solid #E7E5E4;">
+            <h2 style="font-family: 'Playfair Display', Georgia, serif; color: #1C1917; margin-top: 0;">Applicant Details</h2>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Name:</td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.first_name}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Email:</td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.email}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Phone:</td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.phone}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Instagram:</td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.instagram}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4; font-weight: 600;">Program of Interest:</td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #E7E5E4;">{request.program_interest}</td>
+                </tr>
+                {extra_rows}
+            </table>
+            <h3 style="font-family: 'Playfair Display', Georgia, serif; color: #1C1917; margin-top: 25px;">Their Situation:</h3>
+            <p style="background-color: #F5F5F4; padding: 20px; border-left: 4px solid #D6C0A6; white-space: pre-line;">{request.situation}</p>
+        </div>
+        <div style="text-align: center; padding: 20px; color: #57534E; font-size: 12px;">
+            <p>Submitted on {submitted_at.strftime('%B %d, %Y at %I:%M %p')} UTC</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    confirm_html = f"""
+    <html>
+    <body style="font-family: 'Manrope', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FBFBF9; color: #1C1917;">
+        <div style="background-color: #1C1917; color: #FBFBF9; padding: 30px; text-align: center;">
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 24px;">Application Received</h1>
+        </div>
+        <div style="padding: 30px; background-color: #FFFFFF; border: 1px solid #E7E5E4;">
+            <p>Hi {request.first_name},</p>
+            <p>Thank you for applying for <strong>{aid_label}</strong>.</p>
+            <p>I personally review every application — not just based on what you can afford, but on motivation and how serious you are about showing up. You can expect to hear back from me within 3–5 business days.</p>
+            <p>If approved, I'll send you next steps including a discount code or scholarship access link.</p>
+            <p style="margin-top: 20px;">In the meantime, follow along for movement inspiration:</p>
+            <p>
+                <a href="https://www.instagram.com/sunpreet_sing/" style="color: #D6C0A6; text-decoration: underline; font-weight: 600;">@sunpreet_sing</a>
+                &nbsp;&bull;&nbsp;
+                <a href="https://www.instagram.com/movement.shala/" style="color: #D6C0A6; text-decoration: underline;">@movement.shala</a>
+            </p>
+            <p style="margin-top: 30px; color: #57534E; font-size: 13px;">With movement,<br><strong>Sunpreet Singh</strong><br>Movement Shala</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    # Save to DB
+    record = {
+        "id": str(uuid.uuid4()),
+        "aid_type": request.aid_type,
+        "first_name": request.first_name,
+        "email": request.email,
+        "phone": request.phone,
+        "instagram": request.instagram,
+        "program_interest": request.program_interest,
+        "institution": request.institution,
+        "student_id": request.student_id,
+        "discount_requested": request.discount_requested,
+        "situation": request.situation,
+        "submitted_at": submitted_at.isoformat(),
+    }
+    await db.financial_aid_applications.insert_one(record)
+
+    # Send admin email
+    try:
+        await send_email_async(
+            BREVO_COACHING_EMAIL,
+            f"New Financial Aid Application — {aid_label} — {request.first_name}",
+            admin_html,
+            reply_to=request.email,
+            channel="coaching",
+        )
+    except Exception as e:
+        logger.error(f"Failed to send admin financial-aid email: {e}")
+
+    # Send applicant confirmation
+    try:
+        await send_email_async(
+            request.email,
+            "Your Financial Aid Application — Sunpreet Singh Coaching",
+            confirm_html,
+            channel="coaching",
+        )
+    except Exception as e:
+        logger.error(f"Failed to send applicant financial-aid confirmation: {e}")
+
+    return {"success": True, "message": "Application received. Check your email for confirmation."}
 
 
 # Payment Routes

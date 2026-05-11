@@ -19,12 +19,14 @@ const staggerContainer = {
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    email: '',
-    phone: '',
-    instagram: '',
-    message: '',
-  });
+  firstName: '',
+  age: '',
+  location: '',
+  email: '',
+  phone: '',
+  instagram: '',
+  message: '',
+});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [charCount, setCharCount] = useState(0);
 
@@ -43,28 +45,45 @@ export default function ContactPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.firstName || !formData.email || !formData.phone || !formData.instagram || !formData.message) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+if (
+  !formData.firstName ||
+  !formData.age ||
+  !formData.location ||
+  !formData.email ||
+  !formData.phone ||
+  !formData.instagram ||
+  !formData.message
+) {
+  toast.error('Please fill in all required fields');
+  return;
+}
 
     setIsSubmitting(true);
 
     try {
       const payload = {
-        first_name: formData.firstName,
-        email: formData.email,
-        phone: formData.phone,
-        instagram: formData.instagram || null,
-        message: formData.message,
-      };
+  first_name: formData.firstName,
+  age: formData.age,
+  location: formData.location,
+  email: formData.email,
+  phone: formData.phone,
+  instagram: formData.instagram || null,
+  message: formData.message,
+};
 
       await axios.post(`${API}/contact`, payload);
       
       toast.success('Message sent successfully! I will get back to you soon.');
       
-      setFormData({ firstName: '', email: '', phone: '', instagram: '', message: '' });
-      setCharCount(0);
+setFormData({
+  firstName: '',
+  age: '',
+  location: '',
+  email: '',
+  phone: '',
+  instagram: '',
+  message: '',
+});      setCharCount(0);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Failed to send message. Please try again.');
@@ -176,6 +195,22 @@ export default function ContactPage() {
                     required
                   />
                 </div>
+              
+                {/* Age */}
+<div className="input-animated">
+  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">
+    Age *
+  </label>
+  <input
+    type="number"
+    name="age"
+    value={formData.age}
+    onChange={handleInputChange}
+    placeholder="Your age"
+    className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-4 px-0 text-[#1C1917] placeholder:text-[#A8A29E] focus:outline-none transition-colors"
+    required
+  />
+</div>
 
                 {/* Email */}
                 <div className="input-animated">
@@ -210,6 +245,22 @@ export default function ContactPage() {
                     required
                   />
                 </div>
+                
+{/* Location */}
+<div className="input-animated">
+  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">
+    Where are you based? *
+  </label>
+  <input
+    type="text"
+    name="location"
+    value={formData.location}
+    onChange={handleInputChange}
+    placeholder="City, Country"
+    className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-4 px-0 text-[#1C1917] placeholder:text-[#A8A29E] focus:outline-none transition-colors"
+    required
+  />
+</div>
 
                 {/* Instagram ID */}
                 <div className="input-animated">

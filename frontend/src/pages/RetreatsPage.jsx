@@ -193,7 +193,15 @@ export default function RetreatsPage() {
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [selectedRetreat, setSelectedRetreat] = useState(null);
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', instagram: '', message: '' });
+const [formData, setFormData] = useState({
+  name: '',
+  age: '',
+  location: '',
+  email: '',
+  phone: '',
+  instagram: '',
+  message: ''
+});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [feedbackLightbox, setFeedbackLightbox] = useState(null);
@@ -213,15 +221,30 @@ export default function RetreatsPage() {
     setApplyModalOpen(false);
     setEnquiryModalOpen(false);
     setSelectedRetreat(null);
-    setFormData({ name: '', email: '', phone: '', instagram: '', message: '' });
+setFormData({
+  name: '',
+  age: '',
+  location: '',
+  email: '',
+  phone: '',
+  instagram: '',
+  message: ''
+});
   };
 
   const handleSubmit = async (e, type) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.instagram) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+if (
+  !formData.name ||
+  !formData.age ||
+  !formData.location ||
+  !formData.email ||
+  !formData.phone ||
+  !formData.instagram
+) {
+  toast.error('Please fill in all required fields');
+  return;
+}
     setIsSubmitting(true);
     try {
       const messagePrefix = type === 'retreat'
@@ -229,10 +252,12 @@ export default function RetreatsPage() {
         : `PRIVATE/CORPORATE RETREAT ENQUIRY\n\n`;
 
       await axios.post(`${API}/contact`, {
-        first_name: formData.name,
-        email: formData.email,
-        phone: formData.phone || null,
-        instagram: formData.instagram || null,
+  first_name: formData.name,
+  age: formData.age,
+  location: formData.location,
+  email: formData.email,
+  phone: formData.phone || null,
+  instagram: formData.instagram || null,
         message: `${messagePrefix}${formData.message || 'No additional message'}`,
         source: type === 'retreat' ? 'retreat' : 'retreat',
       });
@@ -754,8 +779,37 @@ export default function RetreatsPage() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">Phone</label>
-                      <input type="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none" placeholder="+91 98765 43210" data-testid="apply-phone" />
+  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">
+    Age *
+  </label>
+  <input
+    type="number"
+    value={formData.age}
+    onChange={(e) =>
+      setFormData(p => ({ ...p, age: e.target.value }))
+    }
+    className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none"
+    required
+  />
+</div>
+ <div>
+  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">
+    Where are you based? *
+  </label>
+  <input
+    type="text"
+    value={formData.location}
+    onChange={(e) =>
+      setFormData(p => ({ ...p, location: e.target.value }))
+    }
+    placeholder="City, Country"
+    className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none"
+    required
+  />
+</div>
+                    <div>
+                      <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">Phone*</label>
+                      <input type="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none" placeholder="+91 98765 43210" required data-testid="apply-phone" />
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">Instagram ID *</label>
@@ -765,6 +819,7 @@ export default function RetreatsPage() {
                       <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">Message</label>
                       <textarea value={formData.message} onChange={(e) => setFormData(p => ({ ...p, message: e.target.value }))} className="w-full bg-[#F5F5F4] border border-[#E7E5E4] focus:border-[#1C1917] p-3 text-[#1C1917] focus:outline-none resize-none" rows={3} placeholder="Tell us about yourself and your expectations" data-testid="apply-message" />
                     </div>
+                   
                     <Button type="submit" disabled={isSubmitting} className="w-full bg-[#1C1917] text-[#FBFBF9] h-12 text-sm uppercase tracking-[0.15em] rounded-none hover:bg-[#D6C0A6] hover:text-[#1C1917] transition-all" data-testid="apply-submit">
                       {isSubmitting ? 'Submitting...' : 'Submit Application'}
                     </Button>
@@ -811,9 +866,38 @@ export default function RetreatsPage() {
                   <input type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none" required data-testid="enquiry-email" />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">Phone</label>
-                  <input type="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none" placeholder="+91 98765 43210" data-testid="enquiry-phone" />
+                  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">Phone*</label>
+                  <input type="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none" placeholder="+91 98765 43210" required data-testid="enquiry-phone" />
                 </div>
+                <div>
+  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">
+    Age *
+  </label>
+  <input
+    type="number"
+    value={formData.age}
+    onChange={(e) =>
+      setFormData(p => ({ ...p, age: e.target.value }))
+    }
+    className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none"
+    required
+  />
+</div>
+<div>
+  <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">
+    Where are you based? *
+  </label>
+  <input
+    type="text"
+    value={formData.location}
+    onChange={(e) =>
+      setFormData(p => ({ ...p, location: e.target.value }))
+    }
+    placeholder="City, Country"
+    className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none"
+    required
+  />
+</div>
                 <div>
                   <label className="text-xs uppercase tracking-[0.2em] text-[#57534E] mb-2 block">Instagram ID *</label>
                   <input type="text" value={formData.instagram} onChange={(e) => setFormData(p => ({ ...p, instagram: e.target.value }))} className="w-full bg-transparent border-b border-[#E7E5E4] focus:border-[#1C1917] py-3 text-[#1C1917] focus:outline-none" placeholder="@your_handle" required data-testid="enquiry-instagram" />
