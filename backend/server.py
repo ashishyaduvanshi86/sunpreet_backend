@@ -1,5 +1,6 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,10 +9,9 @@ import logging
 import razorpay
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 import uuid
 from datetime import datetime, timezone
-import razorpay
 import httpx
 
 ROOT_DIR = Path(__file__).parent
@@ -43,6 +43,7 @@ PRODUCT_IDS = ['handstand-canes', 'fingerboard', 'peg-board', 'parallettes']
 # Create the main app without a prefix
 app = FastAPI()
 
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
@@ -71,6 +72,8 @@ class ContactFormRequest(BaseModel):
     instagram: Optional[str] = None
     message: str
     source: Optional[str] = "coaching"
+    retreat_id: Optional[str] = None
+    retreat_title: Optional[str] = None
 
 class ContactFormResponse(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -179,18 +182,46 @@ async def send_email_async(to_email: str, subject: str, html_content: str, reply
         "api-key": api_key,
         "content-type": "application/json",
     }
+    success = False
+    error_msg = None
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, json=payload, headers=headers, timeout=15)
             if resp.status_code == 201:
                 logger.info(f"Email sent to {to_email} via Brevo API ({channel})")
-                return True
+                success = True
             else:
-                logger.error(f"Brevo API error {resp.status_code}: {resp.text}")
-                return False
+                error_msg = f"{resp.status_code}: {resp.text[:200]}"
+                logger.error(f"Brevo API error {error_msg}")
     except Exception as e:
-        logger.error(f"Failed to send email via Brevo API: {str(e)}")
-        return False
+        error_msg = str(e)
+        logger.error(f"Failed to send email via Brevo API: {error_msg}")
+
+    # Log every email attempt
+    try:
+        await db.sent_emails.insert_one({
+            "id": str(uuid.uuid4()),
+            "to_email": to_email,
+            "from_email": sender_email,
+            "subject": subject,
+            "html_content": html_content,
+            "reply_to": reply_to,
+            "channel": channel,
+            "success": success,
+            "error": error_msg,
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+        })
+        # Prune to last 500 emails
+        count = await db.sent_emails.count_documents({})
+        if count > 500:
+            oldest = db.sent_emails.find({}, {"_id": 1}).sort("sent_at", 1).limit(count - 500)
+            ids = [d["_id"] async for d in oldest]
+            if ids:
+                await db.sent_emails.delete_many({"_id": {"$in": ids}})
+    except Exception as e:
+        logger.error(f"Failed to log email: {e}")
+
+    return success
 
 
 # API Routes
@@ -322,16 +353,21 @@ async def submit_contact_form(request: ContactFormRequest):
     
     # Save to database
     contact_doc = {
-        "id": contact_id,
-        "first_name": request.first_name,
-        "email": request.email,
-        "phone": request.phone,
-        "instagram": request.instagram,
-        "message": request.message,
-        "submitted_at": submitted_at.isoformat(),
-        "email_sent": email_sent
-    }
+    "id": contact_id,
+    "first_name": request.first_name,
+    "email": request.email,
+    "phone": request.phone,
+    "instagram": request.instagram,
+    "message": request.message,
+    "source": request.source,
+    "retreat_id": request.retreat_id,
+    "retreat_title": request.retreat_title,
+    "submitted_at": submitted_at.isoformat(),
+    "email_sent": email_sent
+}
     await db.contact_submissions.insert_one(contact_doc)
+    if is_retreat:
+        await db.retreat_applications.insert_one(contact_doc)
     
     return ContactFormResponse(
         id=contact_id,
@@ -473,6 +509,7 @@ async def notify_me(request: NotifyMeRequest):
             "notified": False,
         }
         await db.product_notifications.insert_one(doc)
+        await db.product_waitlist.insert_one(doc)
         logger.info(f"Notification subscription: {request.email} for {request.product_id}")
 
     # Always send confirmation email
@@ -908,13 +945,469 @@ async def get_razorpay_key():
     return {"key_id": RAZORPAY_KEY_ID}
 
 
+# ============================================
+# HEALTH CHECK (for UptimeRobot pings)
+# ============================================
+@api_router.get("/health")
+async def health_check():
+    return {"status": "ok", "ts": datetime.now(timezone.utc).isoformat()}
+
+
+# ============================================
+# AUTH ROUTES
+# ============================================
+from auth import (
+    verify_password, create_access_token, require_admin,
+    hash_password, log_activity
+)
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@api_router.post("/auth/login")
+async def admin_login(req: LoginRequest):
+    email = req.email.lower().strip()
+    user = await db.admin_users.find_one({"email": email})
+    if not user or not verify_password(req.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = create_access_token(str(user.get("_id")), email)
+    await log_activity(db, email, "login", "auth", "Admin logged in")
+    return {
+        "token": token,
+        "user": {
+            "email": user["email"],
+            "name": user.get("name", "Admin"),
+            "role": user.get("role", "admin"),
+        }
+    }
+
+@api_router.get("/auth/me")
+async def auth_me(user: dict = Depends(require_admin)):
+    return user
+
+@api_router.post("/auth/change-password")
+async def change_password(req: ChangePasswordRequest, user: dict = Depends(require_admin)):
+    full = await db.admin_users.find_one({"email": user["email"]})
+    if not full or not verify_password(req.current_password, full["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if len(req.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+    await db.admin_users.update_one(
+        {"email": user["email"]},
+        {"$set": {"password_hash": hash_password(req.new_password)}}
+    )
+    await log_activity(db, user["email"], "change_password", "auth", "Password updated")
+    return {"success": True}
+
+
+# ============================================
+# CONTENT ROUTES — public read, admin write
+# ============================================
+PUBLIC_CONTENT_KEYS = {"retreats", "programs", "home", "about", "coaching", "settings", "testimonials", "products"}
+
+@api_router.get("/content/{key}")
+async def get_content(key: str):
+    if key not in PUBLIC_CONTENT_KEYS:
+        raise HTTPException(status_code=404, detail="Content key not found")
+    doc = await db.content_documents.find_one({"key": key}, {"_id": 0})
+    if not doc:
+        # Return empty default
+        return {"key": key, "data": [] if key in ("retreats", "programs") else {}, "updated_at": None}
+    return doc
+
+class ContentUpdateRequest(BaseModel):
+    data: Any
+
+@api_router.put("/admin/content/{key}")
+async def update_content(key: str, req: ContentUpdateRequest, user: dict = Depends(require_admin)):
+    if key not in PUBLIC_CONTENT_KEYS:
+        raise HTTPException(status_code=404, detail="Content key not found")
+    now = datetime.now(timezone.utc).isoformat()
+    await db.content_documents.update_one(
+        {"key": key},
+        {"$set": {"key": key, "data": req.data, "updated_at": now}},
+        upsert=True,
+    )
+    await log_activity(db, user["email"], f"update_content:{key}", key, "Content updated")
+    return {"success": True, "key": key, "updated_at": now}
+
+
+# ============================================
+# ADMIN SUBMISSIONS INBOX
+# ============================================
+@api_router.get("/admin/submissions")
+async def admin_submissions(
+    source: Optional[str] = None,
+    user: dict = Depends(require_admin)
+):
+    """Unified inbox across all submission types."""
+    items: List[Dict[str, Any]] = []
+
+    if source in (None, "contact"):
+        async for doc in db.contact_submissions.find({}, {"_id": 0}).sort("submitted_at", -1).limit(200):
+            items.append({**doc, "kind": "contact"})
+
+    if source in (None, "retreat"):
+        async for doc in db.retreat_applications.find({}, {"_id": 0}).sort("submitted_at", -1).limit(200):
+            items.append({**doc, "kind": "retreat"})
+
+    if source in (None, "financial_aid"):
+        async for doc in db.financial_aid_applications.find({}, {"_id": 0}).sort("submitted_at", -1).limit(200):
+            items.append({**doc, "kind": "financial_aid"})
+
+    if source in (None, "waitlist"):
+        async for doc in db.product_waitlist.find({}, {"_id": 0}).sort("subscribed_at", -1).limit(200):
+            items.append({**doc, "kind": "waitlist"})
+
+    if source in (None, "order"):
+        async for doc in db.orders.find({}, {"_id": 0}).sort("created_at", -1).limit(200):
+            items.append({**doc, "kind": "order"})
+
+    # Sort all by best-available timestamp
+    def ts_key(d):
+        return d.get("submitted_at") or d.get("subscribed_at") or d.get("created_at") or ""
+    items.sort(key=ts_key, reverse=True)
+    return {"items": items, "count": len(items)}
+
+
+@api_router.patch("/admin/submissions/{kind}/{item_id}")
+async def update_submission_status(kind: str, item_id: str, payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    """Update status / notes on a submission."""
+    coll_map = {
+        "contact": "contacts",
+        "retreat": "retreat_applications",
+        "financial_aid": "financial_aid_applications",
+        "waitlist": "product_waitlist",
+        "order": "orders",
+    }
+    coll_name = coll_map.get(kind)
+    if not coll_name:
+        raise HTTPException(status_code=400, detail="Invalid submission kind")
+    allowed = {k: v for k, v in payload.items() if k in ("status", "notes", "replied")}
+    if not allowed:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    result = await db[coll_name].update_one({"id": item_id}, {"$set": allowed})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    await log_activity(db, user["email"], f"update_submission:{kind}", item_id, str(allowed))
+    return {"success": True}
+
+
+# ============================================
+# FINANCIAL AID APPROVE / REJECT
+# ============================================
+class AidDecisionRequest(BaseModel):
+    discount_code: Optional[str] = None  # for approval
+    discount_percent: Optional[int] = None
+    notes: Optional[str] = None
+
+@api_router.post("/admin/financial-aid/{aid_id}/approve")
+async def approve_financial_aid(aid_id: str, req: AidDecisionRequest, user: dict = Depends(require_admin)):
+    aid = await db.financial_aid_applications.find_one({"id": aid_id}, {"_id": 0})
+    if not aid:
+        raise HTTPException(status_code=404, detail="Application not found")
+    await db.financial_aid_applications.update_one(
+        {"id": aid_id},
+        {"$set": {
+            "status": "approved",
+            "discount_code": req.discount_code or "",
+            "discount_percent": req.discount_percent or 0,
+            "admin_notes": req.notes or "",
+            "decided_at": datetime.now(timezone.utc).isoformat(),
+            "decided_by": user["email"],
+        }}
+    )
+    # Send approval email
+    try:
+        html = f"""
+        <html><body style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;'>
+            <div style='background:#1C1917;color:#FBFBF9;padding:30px;text-align:center;'>
+                <h1 style='font-family:Georgia,serif;margin:0;'>Application Approved</h1>
+            </div>
+            <div style='padding:30px;background:#fff;'>
+                <p>Hi {aid.get('first_name', 'there')},</p>
+                <p>Great news — your financial aid application has been <strong>approved</strong>.</p>
+                {f"<p>Your discount: <strong>{req.discount_percent or ''}% off</strong></p>" if req.discount_percent else ''}
+                {f"<p>Use code: <strong style='background:#D6C0A6;padding:8px 16px;font-size:18px;letter-spacing:2px;'>{req.discount_code}</strong></p>" if req.discount_code else ''}
+                {f"<p>{req.notes}</p>" if req.notes else ''}
+                <p>Looking forward to having you in the community.</p>
+                <p style='margin-top:30px;'>With movement,<br><strong>Sunpreet Singh</strong></p>
+            </div>
+        </body></html>
+        """
+        await send_email_async(aid["email"], "Your Financial Aid Application is Approved", html, channel="coaching")
+    except Exception as e:
+        logger.error(f"Failed to send aid approval email: {e}")
+    await log_activity(db, user["email"], "approve_financial_aid", aid_id, f"Discount: {req.discount_percent}% / {req.discount_code}")
+    return {"success": True}
+
+
+@api_router.post("/admin/financial-aid/{aid_id}/reject")
+async def reject_financial_aid(aid_id: str, req: AidDecisionRequest, user: dict = Depends(require_admin)):
+    aid = await db.financial_aid_applications.find_one({"id": aid_id}, {"_id": 0})
+    if not aid:
+        raise HTTPException(status_code=404, detail="Application not found")
+    await db.financial_aid_applications.update_one(
+        {"id": aid_id},
+        {"$set": {
+            "status": "rejected",
+            "admin_notes": req.notes or "",
+            "decided_at": datetime.now(timezone.utc).isoformat(),
+            "decided_by": user["email"],
+        }}
+    )
+    try:
+        html = f"""
+        <html><body style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;'>
+            <div style='background:#1C1917;color:#FBFBF9;padding:30px;text-align:center;'>
+                <h1 style='font-family:Georgia,serif;margin:0;'>Update on Your Application</h1>
+            </div>
+            <div style='padding:30px;background:#fff;'>
+                <p>Hi {aid.get('first_name', 'there')},</p>
+                <p>Thank you for taking the time to apply for financial aid. After reviewing your application, I'm unable to offer a discount at this time.</p>
+                {f"<p>{req.notes}</p>" if req.notes else ''}
+                <p>I hope this doesn't deter you — please reach out if your circumstances change, and keep moving.</p>
+                <p style='margin-top:30px;'>With movement,<br><strong>Sunpreet Singh</strong></p>
+            </div>
+        </body></html>
+        """
+        await send_email_async(aid["email"], "Update on Your Financial Aid Application", html, channel="coaching")
+    except Exception as e:
+        logger.error(f"Failed to send aid rejection email: {e}")
+    await log_activity(db, user["email"], "reject_financial_aid", aid_id, req.notes or "")
+    return {"success": True}
+
+
+# ============================================
+# DASHBOARD STATS
+# ============================================
+@api_router.get("/admin/dashboard")
+async def admin_dashboard(user: dict = Depends(require_admin)):
+    from datetime import timedelta
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    week_start = (now - timedelta(days=7)).isoformat()
+
+    counts = {
+        "contacts_total": await db.contact_submissions.count_documents({}),
+        "contacts_today": await db.contact_submissions.count_documents({"submitted_at": {"$gte": today_start}}),
+        "contacts_week": await db.contact_submissions.count_documents({"submitted_at": {"$gte": week_start}}),
+        "retreat_apps_total": await db.retreat_applications.count_documents({}),
+        "financial_aid_total": await db.financial_aid_applications.count_documents({}),
+        "financial_aid_pending": await db.financial_aid_applications.count_documents({"status": {"$exists": False}}) + await db.financial_aid_applications.count_documents({"status": "pending"}),
+        "waitlist_total": await db.product_waitlist.count_documents({}),
+        "orders_total": await db.orders.count_documents({}),
+        "emails_sent_total": await db.sent_emails.count_documents({}),
+    }
+
+    # Recent form submissions across ALL sources (last 10)
+    recent_submissions = []
+    for coll, kind, ts_field in [
+        ("contacts", "contact", "submitted_at"),
+        ("retreat_applications", "retreat", "submitted_at"),
+        ("financial_aid_applications", "financial_aid", "submitted_at"),
+        ("product_waitlist", "waitlist", "subscribed_at"),
+        ("orders", "order", "created_at"),
+    ]:
+        async for doc in db[coll].find({}, {"_id": 0}).sort(ts_field, -1).limit(5):
+            recent_submissions.append({
+                **doc,
+                "kind": kind,
+                "_ts": doc.get(ts_field, ""),
+            })
+    recent_submissions.sort(key=lambda x: x.get("_ts", ""), reverse=True)
+    recent_submissions = recent_submissions[:10]
+
+    return {"counts": counts, "recent_submissions": recent_submissions}
+
+
+# ============================================
+# EMAILS INBOX
+# ============================================
+@api_router.get("/admin/emails")
+async def admin_emails(limit: int = 100, user: dict = Depends(require_admin)):
+    emails = []
+    async for doc in db.sent_emails.find({}, {"_id": 0}).sort("sent_at", -1).limit(limit):
+        emails.append(doc)
+    return {"emails": emails, "count": len(emails)}
+
+
+# ============================================
+# PRODUCTS CRUD (admin-managed catalog)
+# ============================================
+@api_router.get("/admin/products")
+async def admin_list_products(user: dict = Depends(require_admin)):
+    doc = await db.content_documents.find_one({"key": "products"}, {"_id": 0})
+    products = (doc or {}).get("data") or []
+    # Merge live stock counts
+    for p in products:
+        s = await db.product_stock.find_one({"product_id": p["id"]}, {"_id": 0})
+        if s:
+            p["stock"] = s.get("stock", 0)
+            p["coming_soon"] = s.get("coming_soon", True)
+            p["total_stock"] = s.get("total_stock", 0)
+    return {"products": products}
+
+
+@api_router.put("/admin/products")
+async def admin_save_products(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    """Save the products list (CRUD). Also creates/updates stock rows for new products."""
+    products = payload.get("products") or []
+    now = datetime.now(timezone.utc).isoformat()
+    # Save catalog
+    await db.content_documents.update_one(
+        {"key": "products"},
+        {"$set": {"key": "products", "data": products, "updated_at": now}},
+        upsert=True,
+    )
+    # Ensure stock row exists for each product
+    for p in products:
+        if not p.get("id"):
+            continue
+        existing = await db.product_stock.find_one({"product_id": p["id"]})
+        if not existing:
+            await db.product_stock.insert_one({
+                "product_id": p["id"],
+                "coming_soon": True,
+                "stock": int(p.get("total_stock", 20)),
+                "total_stock": int(p.get("total_stock", 20)),
+            })
+    await log_activity(db, user["email"], "save_products", "products", f"Saved {len(products)} products")
+    return {"success": True}
+
+
+@api_router.patch("/admin/products/{product_id}/stock")
+async def admin_update_stock(product_id: str, payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    """Update stock count / total_stock for a product."""
+    allowed = {k: v for k, v in payload.items() if k in ("stock", "total_stock", "coming_soon")}
+    if not allowed:
+        raise HTTPException(status_code=400, detail="No valid fields")
+    await db.product_stock.update_one({"product_id": product_id}, {"$set": allowed}, upsert=True)
+    await log_activity(db, user["email"], "update_stock", product_id, str(allowed))
+    return {"success": True}
+
+
+# Public products endpoint (replaces static products.js)
+@api_router.get("/products")
+async def public_list_products():
+    doc = await db.content_documents.find_one({"key": "products"}, {"_id": 0})
+    products = (doc or {}).get("data") or []
+    return {"products": products}
+
+
+# ============================================
+# NEWSLETTER / BROADCAST
+# ============================================
+@api_router.get("/admin/audiences")
+async def admin_audiences(user: dict = Depends(require_admin)):
+    """Return email lists for each broadcast audience segment."""
+    segments: Dict[str, List[Dict[str, Any]]] = {
+        "contacts": [],
+        "retreat_applicants": [],
+        "financial_aid_applicants": [],
+        "waitlist": [],
+    }
+
+    async for doc in db.contact_submissions.find({}, {"_id": 0, "email": 1, "first_name": 1, "submitted_at": 1}).sort("submitted_at", -1):
+        if doc.get("email"):
+            segments["contacts"].append({"email": doc["email"], "name": doc.get("first_name", "")})
+
+    async for doc in db.retreat_applications.find({}, {"_id": 0, "email": 1, "first_name": 1, "name": 1, "retreat_id": 1, "submitted_at": 1}).sort("submitted_at", -1):
+        if doc.get("email"):
+            segments["retreat_applicants"].append({
+                "email": doc["email"],
+                "name": doc.get("first_name") or doc.get("name") or "",
+                "retreat_id": doc.get("retreat_id", ""),
+            })
+
+    async for doc in db.financial_aid_applications.find({}, {"_id": 0, "email": 1, "first_name": 1, "name": 1, "submitted_at": 1}).sort("submitted_at", -1):
+        if doc.get("email"):
+            segments["financial_aid_applicants"].append({
+                "email": doc["email"],
+                "name": doc.get("first_name") or doc.get("name") or "",
+            })
+
+    async for doc in db.product_waitlist.find({}, {"_id": 0, "email": 1, "product_id": 1, "subscribed_at": 1}).sort("subscribed_at", -1):
+        if doc.get("email"):
+            segments["waitlist"].append({
+                "email": doc["email"],
+                "product_id": doc.get("product_id", ""),
+            })
+
+    counts = {k: len({s["email"].lower() for s in v}) for k, v in segments.items()}
+    return {"segments": segments, "counts": counts}
+
+
+class NewsletterRequest(BaseModel):
+    subject: str
+    html: str
+    recipients: List[EmailStr]
+
+@api_router.post("/admin/newsletter")
+async def send_newsletter(req: NewsletterRequest, user: dict = Depends(require_admin)):
+    if not req.subject.strip() or not req.html.strip():
+        raise HTTPException(status_code=400, detail="Subject and message are required")
+    if not req.recipients:
+        raise HTTPException(status_code=400, detail="No recipients")
+    sent = 0
+    failed = 0
+    # Wrap user HTML in branded template
+    template = f"""
+    <html><body style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#FBFBF9;color:#1C1917;'>
+      <div style='background:#1C1917;color:#FBFBF9;padding:30px;text-align:center;'>
+        <p style='margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#D6C0A6;'>Sunpreet Singh Coaching</p>
+      </div>
+      <div style='padding:30px;background:#fff;border:1px solid #E7E5E4;border-top:0;'>
+        {req.html}
+      </div>
+      <div style='padding:20px;text-align:center;color:#57534E;font-size:11px;'>
+        Movement Shala · <a href='https://www.instagram.com/sunpreet_sing/' style='color:#D6C0A6;'>@sunpreet_sing</a>
+      </div>
+    </body></html>
+    """
+    for email in req.recipients:
+        try:
+            ok = await send_email_async(email, req.subject, template, channel="coaching")
+            if ok:
+                sent += 1
+            else:
+                failed += 1
+        except Exception as e:
+            logger.error(f"Newsletter send failure to {email}: {e}")
+            failed += 1
+    await log_activity(db, user["email"], "newsletter", f"recipients={len(req.recipients)}", f"sent={sent} failed={failed} subject={req.subject[:50]}")
+    return {"total": len(req.recipients), "sent_count": sent, "failed_count": failed}
+
+
+# ============================================
+# ACTIVITY LOG
+# ============================================
+@api_router.get("/admin/activity")
+async def admin_activity(user: dict = Depends(require_admin)):
+    entries = []
+    async for entry in db.activity_log.find({}, {"_id": 0}).sort("ts", -1).limit(100):
+        entries.append(entry)
+    return {"entries": entries}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://sunpreetsingh.com",
+        "https://www.sunpreetsingh.com",
+        "https://transcendent-fudge-cd2149.netlify.app",
+    ],
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -924,7 +1417,16 @@ app.mount("/api/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="
 
 @app.on_event("startup")
 async def startup_init():
-    """Initialize product stock records on startup"""
+    """Initialize product stock records and seed admin user on startup"""
+    # Seed admin user (idempotent)
+    from auth import seed_admin
+    await seed_admin(db)
+    # Ensure unique index on admin email
+    await db.admin_users.create_index("email", unique=True)
+    # Seed default content if missing
+    from seed_content import ensure_seed_content
+    await ensure_seed_content(db)
+    # Initialize product stock
     for pid in PRODUCT_IDS:
         existing = await db.product_stock.find_one({"product_id": pid})
         if not existing:
