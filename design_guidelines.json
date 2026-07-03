@@ -1,0 +1,130 @@
+{
+  "project_name": "Sunpreet - Movement & Wellness Coaching",
+  "design_philosophy": {
+    "identity": "Organic Minimalist Premium",
+    "core_principles": [
+      "Movement is Art: Treat every layout like a pose—balanced, intentional, and fluid.",
+      "Silence is loud: Use massive whitespace to create authority.",
+      "Texture over Gloss: Use grain, matte colors, and serif fonts instead of digital gradients."
+    ],
+    "mood": "Grounded, Disciplined, Luxurious, Organic"
+  },
+  "typography": {
+    "font_family": {
+      "heading": "Playfair Display, serif",
+      "body": "Manrope, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[0.9] font-medium",
+      "h2": "text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.1]",
+      "h3": "text-2xl md:text-3xl lg:text-4xl tracking-tight",
+      "body_lg": "text-lg md:text-xl leading-relaxed text-muted-foreground",
+      "body": "text-base leading-relaxed text-muted-foreground",
+      "caption": "text-xs uppercase tracking-[0.2em] font-semibold text-muted-foreground"
+    },
+    "installation_instructions": "Add links to index.html: <link href='https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap' rel='stylesheet'>"
+  },
+  "colors": {
+    "theme": "light",
+    "palette": {
+      "background": "#FBFBF9",
+      "foreground": "#1C1917",
+      "card": "#FFFFFF",
+      "card_foreground": "#1C1917",
+      "primary": "#1C1917",
+      "primary_foreground": "#FBFBF9",
+      "secondary": "#E7E5E4",
+      "secondary_foreground": "#1C1917",
+      "muted": "#F5F5F4",
+      "muted_foreground": "#57534E",
+      "accent": "#D6C0A6",
+      "accent_foreground": "#1C1917",
+      "border": "#E7E5E4",
+      "input": "#E7E5E4",
+      "ring": "#1C1917"
+    },
+    "usage_rules": {
+      "gradients": "FORBIDDEN. Use solid colors or noise textures only.",
+      "shadows": "soft-xl: 0 20px 40px -10px rgba(0,0,0,0.05)",
+      "borders": "Use 1px borders with 10% opacity for a 'etched' look."
+    }
+  },
+  "layout": {
+    "spacing_scale": {
+      "section_padding": "py-24 md:py-32",
+      "container_padding": "px-6 md:px-12 lg:px-20",
+      "element_gap": "gap-8 md:gap-12"
+    },
+    "grid_strategies": [
+      {
+        "name": "The Tetris Grid",
+        "use_for": "Transformations Gallery, Retreats",
+        "rules": "Mix col-span-1 (square) and col-span-2 (landscape) items. Never use a perfect uniform grid."
+      },
+      {
+        "name": "The Editorial Split",
+        "use_for": "About Section, Hero",
+        "rules": "50/50 split on desktop, stacked on mobile. Text must be sticky on scroll if image is tall."
+      }
+    ],
+    "border_radius": "rounded-none or rounded-sm (max 4px). Avoid heavy rounding to keep it masculine/strong."
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground h-12 px-8 text-sm uppercase tracking-widest hover:bg-primary/90 rounded-none transition-all duration-300",
+      "secondary": "bg-transparent border border-primary/20 text-primary h-12 px-8 text-sm uppercase tracking-widest hover:bg-primary hover:text-primary-foreground rounded-none transition-all duration-300",
+      "ghost": "hover:bg-accent/20 hover:text-accent-foreground"
+    },
+    "cards": {
+      "style": "bg-card border border-border/40 shadow-sm hover:shadow-lg transition-all duration-500 rounded-none group",
+      "content_padding": "p-8 md:p-10"
+    },
+    "forms": {
+      "input": "bg-transparent border-b border-border focus:border-primary rounded-none px-0 py-4 focus:ring-0 placeholder:text-muted-foreground/50 transition-colors",
+      "datepicker": "Use Shadcn Calendar but styled with Playfair Display for month headers."
+    }
+  },
+  "images": {
+    "placeholders": {
+      "hero": [
+        "https://images.unsplash.com/photo-1765438867937-90c60e6ce2ec?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.unsplash.com/photo-1761539157110-e21a70539dc4?crop=entropy&cs=srgb&fm=jpg&q=85"
+      ],
+      "retreats": [
+        "https://images.unsplash.com/photo-1759941607814-37cbfbdf668e?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.unsplash.com/photo-1643799259865-055cea522dd8?crop=entropy&cs=srgb&fm=jpg&q=85"
+      ],
+      "testimonials": [
+        "https://images.unsplash.com/photo-1699718085453-d6e5f9e73d1f?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.unsplash.com/photo-1748159997883-144da87b0fa7?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.unsplash.com/photo-1679466061812-211a6b737175?crop=entropy&cs=srgb&fm=jpg&q=85"
+      ],
+      "about": "https://images.unsplash.com/photo-1720788073785-c71095920eeb?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "styling_rules": "All images must have a subtle grain overlay or desaturation filter to match the organic mood. Use object-cover."
+  },
+  "motion": {
+    "library": "framer-motion",
+    "required_effects": [
+      "Smooth Scrolling (Lenis) - MANDATORY",
+      "Text Reveal: Staggered fade-up for headings.",
+      "Parallax: Background images move slower than foreground content.",
+      "Magnetic Buttons: Subtle movement on hover."
+    ],
+    "reduced_motion": "Respect 'prefers-reduced-motion' by disabling parallax and heavy transforms."
+  },
+  "functionality": {
+    "booking": "Use standard HTML form for inputs, but embed Calendly for the actual time slot selection if needed, or use a custom DatePicker (Shadcn) + Time Select.",
+    "email": "Resend integration is required.",
+    "gallery": "Lightbox functionality for Retreats and Transformations."
+  },
+  "universal_guidelines": [
+    "Do not use gradients. Use solid colors.",
+    "Do not center everything. Asymmetry creates tension.",
+    "Use 'Playfair Display' for all Headings (h1-h3).",
+    "Use 'Manrope' for Body text.",
+    "Add 'data-testid' to all interactive elements.",
+    "Mobile images max-height: 80vh."
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "summary": "Completed comprehensive frontend testing of the Retreat Detail Page feature. All 14 test scenarios passed. The 'View Details' button on RetreatsPage correctly navigates to /retreats/:retreatId. Both Bali (bali-2026) and Gulmarg (gulmarg-2027) detail pages render correctly with all sections: Hero, At a Glance (8 cards), Your Stay, What Awaits You, Inclusions/Exclusions, Sample Itinerary (accordion), Gallery (lightbox), Pricing (Twin Sharing & Single Occupancy), and Request an Invite form. Form submission to /api/contact with source='retreat' works correctly.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Retreats page (/retreats) loads correctly with hero and upcoming retreats section",
+    "'View Details' button for Bali retreat navigates to /retreats/bali-2026",
+    "'View Details' button for Gulmarg retreat navigates to /retreats/gulmarg-2027",
+    "RetreatDetailPage for bali-2026 renders hero with title 'Bali Movement Camp'",
+    "RetreatDetailPage for gulmarg-2027 renders hero with title 'The Snow Playground'",
+    "At a Glance section shows 8 cards on both retreat detail pages",
+    "Your Stay section renders correctly with text and image",
+    "About Experience (What Awaits You) section renders correctly",
+    "Inclusions/Exclusions section shows both lists with check/X icons",
+    "Itinerary accordion items expand/collapse on click (Day 1 tested)",
+    "Gallery images are visible and clickable (opens lightbox)",
+    "Pricing section shows Twin Sharing and Single Occupancy cards with TBA prices",
+    "Request an Invite form on detail page submits to /api/contact with source='retreat'",
+    "Form submission shows success message 'We've Got Your Request!' and toast notification",
+    "'Request an Invite' button on retreat detail page hero scrolls to invite form (not modal)",
+    "Navigating to /retreats/nonexistent-id shows 'Retreat Not Found' fallback with 'Back to Retreats' button",
+    "'Request an Invite' button on RetreatsPage still opens the apply modal correctly",
+    "Back navigation from detail page to retreats page works correctly"
+  ],
+
+  "test_report_links": [],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [],
+
+  "updated_files": [],
+
+  "success_rate": {
+    "backend": "N/A (frontend only test - API verified working)",
+    "frontend": "100%"
+  },
+
+  "test_credentials": "None required",
+
+  "seed_data_creation": "Test contact submission created: test_retreat_detail@example.com for Bali Movement Camp retreat",
+
+  "retest_needed": false,
+
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Retreat Detail Page fully implemented and tested. Route: /retreats/:retreatId. Retreat data from /src/data/retreats.js with getRetreatById() function. Two retreats available: bali-2026 (Bali Movement Camp) and gulmarg-2027 (The Snow Playground). Key data-testids: retreat-detail-hero, at-a-glance, glance-{idx}, your-stay, about-experience, inclusions-exclusions, itinerary, itinerary-day-{n}, retreat-gallery, retreat-pricing, request-invite, invite-form, invite-name, invite-email, invite-phone, invite-message, invite-submit, hero-cta. On RetreatsPage: upcoming-retreat-{id}, apply-retreat-{id} (opens modal), details-retreat-{id} (navigates to detail). Form POSTs to /api/contact with source='retreat'."
+}

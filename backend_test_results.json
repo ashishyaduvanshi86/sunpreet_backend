@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-02-17T08:52:57.611624",
+  "tests_run": 8,
+  "tests_passed": 8,
+  "success_rate": 100.0,
+  "all_passed": true,
+  "detailed_results": {
+    "API Root": {
+      "success": true,
+      "status_code": 200,
+      "expected_status": 200,
+      "response_preview": "{\"message\":\"Sunpreet Coaching API\"}"
+    },
+    "Get Testimonials": {
+      "success": true,
+      "status_code": 200,
+      "expected_status": 200,
+      "response_preview": "[{\"id\":\"test-1\",\"name\":\"Alaya\",\"role\":\"Student - 8 months\",\"content\":\"Sunpreet's coaching transformed not just my flexibility but my entire approach to movement. His methodical approach gave me the sp"
+    },
+    "Get Retreats": {
+      "success": true,
+      "status_code": 200,
+      "expected_status": 200,
+      "response_preview": "[{\"id\":\"retreat-1\",\"title\":\"Rishikesh Mountain Retreat\",\"location\":\"Rishikesh, Uttarakhand\",\"date\":\"November 2025\",\"description\":\"A transformative 5-day retreat in the Himalayan foothills focusing on "
+    },
+    "Contact Form (Valid)": {
+      "success": true,
+      "status_code": 200,
+      "expected_status": 200,
+      "response_preview": "{\"id\":\"92521279-2669-4c1c-af85-aee7c7c79e90\",\"first_name\":\"Test User\",\"email\":\"test@example.com\",\"phone\":\"+91 9876543210\",\"message\":\"This is a test message for coaching inquiry. I would like to know m"
+    },
+    "Contact Form (Minimal)": {
+      "success": true,
+      "status_code": 200,
+      "expected_status": 200,
+      "response_preview": "{\"id\":\"5c1f9cbe-aee3-4741-bff8-342e5c253f34\",\"first_name\":\"Jane Doe\",\"email\":\"jane@example.com\",\"phone\":null,\"message\":\"Interested in 1:1 coaching sessions.\",\"preferred_date\":null,\"preferred_time\":nul"
+    },
+    "Contact Form (Invalid Email)": {
+      "success": true,
+      "status_code": 422,
+      "expected_status": 422,
+      "response_preview": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"email\"],\"msg\":\"value is not a valid email address: An email address must have an @-sign.\",\"input\":\"invalid-email\",\"ctx\":{\"reason\":\"An email address must"
+    },
+    "Create Status Check": {
+      "success": true,
+      "status_code": 200,
+      "expected_status": 200,
+      "response_preview": "{\"id\":\"b7d826e7-1323-4852-a72b-4a23950a6e08\",\"client_name\":\"API Test Client\",\"timestamp\":\"2026-02-17T08:52:57.433886Z\"}"
+    },
+    "Get Status Checks": {
+      "success": true,
+      "status_code": 200,
+      "expected_status": 200,
+      "response_preview": "[{\"id\":\"b7d826e7-1323-4852-a72b-4a23950a6e08\",\"client_name\":\"API Test Client\",\"timestamp\":\"2026-02-17T08:52:57.433886Z\"}]"
+    }
+  }
+}
