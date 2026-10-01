@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration 19 — verified Age field across ALL forms (contact, retreat apply, retreat enquiry, brochure, financial-aid), Request-an-Invite modal crash fix (highlights || inclusions fallback), and removal of static `upcomingRetreatsDefault` placeholder in /retreats. All 6 backend pytest tests pass. Playwright confirmed data-testids: apply-age, brochure-age, contact-input-age, aid-age-input (type=number). Apply form submits and toast 'Application submitted!' appears. Both retreat cards (bali-2026 live, gulmarg-2027 coming_soon) render from CMS with customer-assets.emergentagent.com images — no bali-2026 unsplash placeholder appears. The only unsplash image on /retreats is the intentional hero background.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/admin/submissions?source=contact", "issue": "Returns 0 items even after successful POST /api/contact. Collection name mismatch: POST writes to `db.contact_submissions` (server.py:369) but admin inbox reads from `db.contacts` (server.py:1056). Contact rows never surface in admin inbox. Pre-existing bug surfaced by this iteration's requirement 'admin submissions shows contact + financial-aid rows'. Financial-aid works correctly."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_age_fields.py",
+    "/app/test_reports/pytest/iter19_age.xml"
+  ],
+  "action_items": [
+    "Fix admin submissions collection-name mismatch for 'contact': either update GET /api/admin/submissions to read from `db.contact_submissions`, or change POST /api/contact to insert into `db.contacts`. Also mirror the fix in PATCH /api/admin/submissions/{kind}/{item_id} coll_map (currently 'contact' -> 'contacts'). This blocks the admin team from ever seeing contact-form leads."
+  ],
+  "critical_code_review_comments": [
+    "server.py: Collection name inconsistency — contact submissions written to `contact_submissions` but read from `contacts` in admin endpoints (lines 369 vs 1056, 1086). This is a silent data-visibility bug.",
+    "RetreatsPage.jsx still declares `upcomingRetreatsDefault` (lines 23-42) but no longer references it. Dead code — safe but should be removed for cleanliness.",
+    "RetreatsPage.jsx handleSubmit (line 225) requires formData.name/email/instagram but not age — correct (age optional) and consistent with backend.",
+    "File size: RetreatsPage.jsx = ~869 lines, still above 700-line guideline (same note as iter 18)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_age_fields.py (new)"
+  ],
+  "success_rate": {"backend": "100% (6/6 new tests)", "frontend": "100% (all 4 age inputs + modal fix + no-placeholder verified)"},
+  "test_credentials": "coaching@sunpreetsingh.com / coaching@123",
+  "seed_data_creation": "Created test contact submission + 2 financial-aid applications with TEST_AGE markers; cleanup not performed as realistic timestamps isolate the data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend: pytest tests use `pymongo` for direct DB verification because `/api/admin/submissions?source=contact` reads the wrong collection. All age field data-testids verified in playwright: apply-age, enquiry-age, brochure-age, contact-input-age, aid-age-input. Financial Aid modal flow: click 'APPLY FOR FINANCIAL AID' button on /programs → modal appears → click an aid-option (3 options present: student/scholarship/custom) → form reveals age next to phone. Retreats page: both bali-2026 and gulmarg-2027 cards render from CMS; `upcomingRetreatsDefault` constant is unused dead code. CMS cache: localStorage 60s — use `page.evaluate('localStorage.clear()')` then reload after admin mutations.",
+  "rca of the issue": "Admin-inbox contact bug RCA: In server.py, POST /api/contact (line 369) persists to `db.contact_submissions.insert_one(...)`. However, GET /api/admin/submissions (line 1056) iterates `db.contacts.find(...)`. Two different Mongo collections. Reproduction: POST valid contact → GET admin/submissions?source=contact returns `{items:[], count:0}`. Mitigation: standardize on one collection name (recommend `contact_submissions` since it already holds existing data) and update both the GET endpoint and the coll_map in the PATCH endpoint accordingly."
+}

@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 15 verification of (1) tab visibility in ProgramEditor, (2) simplified programs schema (2 programs, removed problem/overview/testimonials), (3) cache invalidation hook. All 3 features working as specified. Backend: 9/9 pytest passing. Frontend admin: tabs visible (156x54 + 75x54), Beginner Card tab fully prepopulated, Beginner FAQ tab shows 12 Q/A entries, Intermediate FAQ shows 10. Public /programs renders Training Programs hero + Choose Your Level with 2 cards (₹2999 x2, 4 Weeks x2, View Full Details x2) + Foundational Program link + Everyone Here Started Somewhere carousel + Thoughtfully Designed Learning Library (3 items). Beginner detail page (via internal state click) shows correct hero (BEGINNER LEVEL eyebrow, H1 'Strong & Mobile — Beginner', tagline, pills, floating ₹2999, START PROGRAM), FAQ section with all 12 questions, Download App section. CONFIRMED: Why Progress Stalls / What You'll Develop / Vikram sections all gone (count=0). CACHE INVALIDATION verified end-to-end: PUT new tagline via API → dispatch 'content-invalidated:programs' event → sentinel TEST_CACHE_INVAL_TAGLINE_V15 visible on /programs within 2.5s (no reload needed). Tagline restored to original.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_programs_v15.py",
+    "/app/test_reports/pytest/pytest_v15.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "useContent hook now exports invalidateContent(key) — admin pages correctly dispatch the CustomEvent after PUT. Cache TTL also reduced to 60s as a safety net. Clean separation of concerns.",
+    "ProgramEditor uses 'card' as state key for the 'Program Details' tab (legacy from previous 4-tab schema). Cosmetic but consider renaming to 'details' for parity with the visible label.",
+    "TrainingProgramsPage detail view is state-based (selectedProgram), not URL-routable — visiting /programs/beginner directly returns empty body. Not a regression vs spec (user pasted the same internal-routing design), but it means detail pages have no deep-link / SEO benefit. Worth flagging if SEO becomes a concern.",
+    "Modal in ProgramEditor still lacks role='dialog'/aria-modal (carried over from prev iter). Minor a11y."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_programs_v15.py (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9)",
+    "frontend": "100% on critical flows tested"
+  },
+  "test_credentials": "coaching@sunpreetsingh.com / coaching@123 (admin)",
+  "seed_data_creation": "None new. Used TEST_CACHE_INVAL_TAGLINE_V15 transiently on beginner.tagline for cache test and TEST_V15_TAGLINE in pytest round-trip — both restored to 'Ready to level up from the basics?' before exit. Verified DB final state via curl.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression: /app/backend/tests/test_programs_v15.py — exactly 2 programs (beginner/intermediate), beginner faq=12, intermediate faq=10, price=₹2999, duration=4 Weeks, no problem/overview/testimonials. Programs detail is state-based not URL-routable; reach it by clicking 'View Full Details' from /programs (use page.get_by_text('View Full Details').first.click(force=True)). Cache invalidation works: invalidateContent(key) clears localStorage + dispatches window CustomEvent 'content-invalidated:<key>'; useContent listens and refetches. To test manually: page.evaluate(\"window.dispatchEvent(new CustomEvent('content-invalidated:programs'))\"). Razorpay still blocked — do not test payment.",
+  "rca of the issue": "N/A — all 3 features verified working as designed. Previous-iter code review comment about 5-min cache TTL is now addressed (TTL=60s + invalidateContent hook). Previous-iter rich schema (problem/overview/testimonials) has been intentionally removed per user's pasted code; backend seed re-seeded to match (2 programs only, beginner=12 FAQs, intermediate=10 FAQs)."
+}

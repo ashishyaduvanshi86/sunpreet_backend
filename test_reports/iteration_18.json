@@ -1,0 +1,26 @@
+{
+  "summary": "Iteration 18 — verified sold-out layout refactor: sold_out retreats now removed from Upcoming grid and rendered in a new 'Sold Out Retreats' section (small tiles via generalized PastExperiencesCarousel). Backend PUT /api/admin/content/retreats flow + all UI test-ids verified end-to-end. Regression: past section renders correctly with defaults; coming_soon and live cards work as expected; admin retreats page loads with SOLD OUT option in status dropdown; smoke pages 200.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_retreats_sold_out.py",
+    "/app/test_reports/pytest/iter18_soldout.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "RetreatsPage.jsx is ~855 lines — approaching the >700 line guideline; consider splitting modals (ApplyModal, EnquiryModal) and hero/feedback/instagram sections into subcomponents for maintainability.",
+    "normalize() no longer sets soldOut, but the outer template still has a comingSoon path; dead branches previously for sold_out have been correctly removed. No functional issue."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "coaching@sunpreetsingh.com / coaching@123 (loaded from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None (used existing bali-2026 & gulmarg-2027; DB restored after tests: bali=live, gulmarg=coming_soon)",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The public content endpoint /api/content/retreats has a 60s localStorage cache on the frontend (see useContent). After admin mutations, MUST call page.evaluate('localStorage.clear()') then page.reload() before asserting UI state — proven pattern used in this iteration. All key test-ids: upcoming-retreat-{id}, soldout-experiences, soldout-card-{id}, past-experiences, past-card-{id}, hero-cta-soldout, hero-cta-past, hero-cta.",
+  "rca of the issue": "N/A — feature verified working. Note: in one intermediate check, hero-cta-soldout returned False because the detail page was navigated to via in-app click without an additional localStorage clear + reload; a fresh reload confirmed the disabled 'SOLD OUT · BOOKINGS CLOSED' CTA renders correctly and brochure form remains visible."
+}

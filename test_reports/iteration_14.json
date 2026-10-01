@@ -1,0 +1,35 @@
+{
+  "summary": "End-to-end verification of PRIMARY BUG fix (ProgramEditor Detail/FAQ tabs no longer empty for Beginner) plus P2 wire-ups (About bio/philosophy, Coaching pricing tiers). Backend: 7/7 pytest passing on /api/content/programs (full nested keys), admin PUT round-trip persistence for programs and about. UI: Beginner edit modal now shows all 4 tabs populated (Card 21/22, Detail Page 16/16 incl. 'Why Progress Stalls After the Basics' + 'What You'll Develop' + 4 problem points, Testimonials 7/7 with Vikram & Ananya, FAQ 25/25 with all 11 Q/A entries). Intermediate FAQ count verified. Public /programs Beginner detail renders problem headline, overview headline, both testimonials, and all 11 FAQs from CMS. /about shows 15 substantial paragraphs, 0 empty, philosophy section present. /coaching shows ₹24,000 and ₹60,000 tiers. Admin About editor exposes all 6 new fields (Bio Paragraphs, Story Closing Italic Quote, Philosophy Eyebrow/Headline/Image URL/Paragraphs). Regression: /admin/shop has 4 Edit buttons + Add CTA; sidebar has no Activity/Email Log.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_programs_about_coaching.py",
+    "/app/test_reports/pytest/pytest_programs_about.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ProgramEditor field names now mirror public-page schema (problem.headline, problem.points, overview.headline, overview.features, testimonials[{name,text}], faq[{q,a}]) — admin/public parity achieved. Good practice.",
+    "useContent() has 5-minute localStorage cache — admin saves do not invalidate the cache. Currently visible by force-reload but end users with stale cache will see old data up to 5 min. Consider bumping cache or adding an invalidation hook on admin PUT. Not blocking.",
+    "Modal in ProgramEditor lacks role='dialog'/aria-modal attributes; minor accessibility gap (auto Escape close still works via React state but a11y testing would flag this). Not blocking."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_programs_about_coaching.py (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (7/7)",
+    "frontend": "100% on critical flows tested"
+  },
+  "test_credentials": "coaching@sunpreetsingh.com / coaching@123 (admin)",
+  "seed_data_creation": "None — verified existing seed via GET /api/content/programs returning 3 programs with foundations/beginner/intermediate IDs and correct nested counts (faq 7/11/9, testimonials 2 each, problem.points 4 each, overview.features 6 each). Test created and rolled back: TEST_ROUNDTRIP_TAGLINE on Beginner, TEST_PHILOSOPHY_HEADLINE on About — both restored after assertions.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression suite: /app/backend/tests/test_programs_about_coaching.py covers full programs nested schema, admin save round-trip with data-integrity (verifies faq.length stays 11 after a beginner tagline edit), and about philosophy round-trip. Run with REACT_APP_BACKEND_URL exported. ProgramEditor modal can be located via clicking nth Edit button (0=foundations, 1=beginner, 2=intermediate). Public Beginner detail at /programs → 'View Full Details' on Beginner card renders 11 FAQs from the seed. Razorpay still blocked — do not test payment endpoints.",
+  "rca of the issue": "ORIGINAL BUG: ProgramEditor used legacy field names (description, heroTitle, whatYouGet, whoFor, faqs) while seed_content.py only seeded a minimal {id, title, level, duration} shape — so when admin opened Edit on Beginner the Detail/FAQ tabs had nothing to bind to. FIX (already applied by E1): (a) DEFAULT_PROGRAMS in seed_content.py now contains the full rich schema (shortDesc, sessions, setting, primaryFocus, problem.{headline,points}, overview.{headline,features}, testimonials, faq, bullets, image, programLink, status) for foundations/beginner/intermediate; (b) ProgramEditor.jsx rewrites to consume those same field paths across Card/Detail Page/Testimonials/FAQ tabs; (c) DB was force re-seeded by removing db.content_documents['programs'] then restarting backend so ensure_seed_content() inserts the new defaults. VERIFIED in this iteration: Beginner editor now shows 'Why Progress Stalls After the Basics', 4 problem points, 'What You'll Develop' + 6 overview features, Vikram & Ananya testimonials, and all 11 FAQ entries pre-populated."
+}
